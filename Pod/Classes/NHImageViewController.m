@@ -89,6 +89,33 @@
     [self.view layoutIfNeeded];
 }
 
+- (void)scrollViewDidZoom:(UIScrollView *)scrollView {
+    if (scrollView.zoomScale == 1) {
+        self.scrollView.contentInset = UIEdgeInsetsZero;
+        return;
+    }
+
+    CGSize zoomedSize = self.contentView.bounds.size;
+    zoomedSize.width *= self.scrollView.zoomScale;
+    zoomedSize.height *= self.scrollView.zoomScale;
+
+    CGFloat verticalOffset = 0;
+    CGFloat horizontalOffset = 0;
+
+    if (zoomedSize.width < self.scrollView.bounds.size.width) {
+        horizontalOffset = (self.scrollView.bounds.size.width - zoomedSize.width) / 2.0;
+    }
+
+    if (zoomedSize.height < self.scrollView.bounds.size.height) {
+        verticalOffset = (self.scrollView.bounds.size.height - zoomedSize.height) / 2.0;
+    }
+
+    self.scrollView.contentInset = UIEdgeInsetsMake(verticalOffset - self.contentView.frame.origin.y,
+                                                    horizontalOffset - self.contentView.frame.origin.x,
+                                                    verticalOffset + self.contentView.frame.origin.y,
+                                                    horizontalOffset + self.contentView.frame.origin.x);
+}
+
 
 - (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView {
     return self.contentView;
