@@ -1,0 +1,12 @@
+source 'https://github.com/CocoaPods/Specs.git'
+
+target 'NHImageViewController', :exclusive => true do
+  pod "NHImageViewController", :path => "../"
+end
+
+target 'Tests', :exclusive => true do
+  pod "NHImageViewController", :path => "../"
+
+  pod 'Specta'
+  pod 'Expecta'
+end
