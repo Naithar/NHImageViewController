@@ -10,6 +10,10 @@
 
 @interface NHImageViewController : UIViewController
 
+@property (strong, readonly, nonatomic) UIButton *closeButton;
+@property (strong, readonly, nonatomic) UIButton *menuButton;
+
+@property (strong, readonly, nonatomic) UILabel *noteLabel;
 
 + (void)showImage:(UIImage*)image inViewController:(UIViewController*)controller;
 

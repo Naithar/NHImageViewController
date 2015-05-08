@@ -12,6 +12,8 @@
 @interface NHImageViewController ()<UIScrollViewDelegate, UIGestureRecognizerDelegate>
 
 @property (nonatomic, assign) UIModalPresentationStyle parentPresentationStyle;
+
+@property (nonatomic, copy) NSString *note;
 @property (nonatomic, strong) NSArray *imagesArray;
 
 @property (nonatomic, strong) UIScrollView *pageScrollView;
@@ -25,6 +27,8 @@
 
 @property (strong, nonatomic) UIButton *closeButton;
 @property (strong, nonatomic) UIButton *menuButton;
+
+@property (strong, nonatomic) UILabel *noteLabel;
 
 @property (nonatomic, assign) CGFloat pageSpacing;
 @end
@@ -48,6 +52,8 @@
     self.pageScrollView.pagingEnabled = YES;
     self.pageScrollView.alwaysBounceHorizontal = NO;
     self.pageScrollView.delegate = self;
+    self.pageScrollView.showsHorizontalScrollIndicator = NO;
+    self.pageScrollView.showsVerticalScrollIndicator = NO;
 
     [self.view addSubview:self.pageScrollView];
 
@@ -79,6 +85,16 @@
     [self.menuButton setTitle:@"o" forState:UIControlStateNormal];
     [self.menuButton addTarget:self action:@selector(menuButtonAction:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.menuButton];
+
+    self.noteLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height - 64, self.view.bounds.size.width, 64)];
+    self.noteLabel.textAlignment = NSTextAlignmentCenter;
+    self.noteLabel.text = @"notedsa dsa das d as ds ad as d as ds adjhsab jda gdiuas dasui udiagu dga gdajg djagj dgaj gdag dhjasg dgah dagjdas";
+    self.noteLabel.lineBreakMode = NSLineBreakByTruncatingTail;
+    self.noteLabel.numberOfLines = 2;
+    self.noteLabel.textColor = [UIColor whiteColor];
+    self.noteLabel.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.5];
+
+    [self.view addSubview:self.noteLabel];
 }
 
 - (void)closeButtonAction:(UIButton*)button {
@@ -96,9 +112,13 @@
     CGRect menuButtonFrame = self.menuButton.frame;
     menuButtonFrame.origin.y = -64;
 
+    CGRect noteLabelFrame = self.noteLabel.frame;
+    noteLabelFrame.origin.y = self.view.frame.size.height;
+
     [UIView animateWithDuration:0.2 animations:^{
         self.closeButton.frame = closeButtonFrame;
         self.menuButton.frame = menuButtonFrame;
+        self.noteLabel.frame = noteLabelFrame;
     }];
 }
 
@@ -107,9 +127,12 @@
 
     CGRect menuButtonFrame = CGRectMake(self.view.bounds.size.width - 50, 0, 50, 64);
 
+    CGRect noteLabelFrame = CGRectMake(0, self.view.bounds.size.height - 64, self.view.bounds.size.width, 64);
+
     [UIView animateWithDuration:0.2 animations:^{
         self.closeButton.frame = closeButtonFrame;
         self.menuButton.frame = menuButtonFrame;
+        self.noteLabel.frame = noteLabelFrame;
     }];
 }
 
@@ -154,7 +177,7 @@
             self.pageScrollView.panGestureRecognizer.enabled = YES;
             self.pageScrollView.pinchGestureRecognizer.enabled = YES;
 
-            if (ABS(velocity.y) > 1000) {
+            if (ABS(velocity.y) > 800) {
                 [UIView animateWithDuration:0.3
                                       delay:0
                                     options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionTransitionNone
@@ -235,8 +258,7 @@
 
     self.closeButton.frame = CGRectMake(0, 0, 50, 64);
     self.menuButton.frame = CGRectMake(self.view.bounds.size.width - 50, 0, 50, 64);
-
-    NSLog(@"current page = %@", @(self.currentPage));
+    self.noteLabel.frame = CGRectMake(0, self.view.bounds.size.height - 64, self.view.bounds.size.width, 64);
     self.pageScrollView.contentOffset = CGPointMake(page * self.pageScrollView.frame.size.width, 0);
 
 
