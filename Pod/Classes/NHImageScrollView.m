@@ -10,7 +10,6 @@
 
 @interface NHImageScrollView ()<UIScrollViewDelegate>
 
-
 @property (nonatomic, strong) UIImageView *contentView;
 
 @end

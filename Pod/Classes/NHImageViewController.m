@@ -12,7 +12,7 @@
 @interface NHImageViewController ()<UIScrollViewDelegate, UIGestureRecognizerDelegate>
 
 @property (nonatomic, assign) UIModalPresentationStyle parentPresentationStyle;
-@property (nonatomic, strong) UIImage *image;
+@property (nonatomic, strong) NSArray *imagesArray;
 
 @property (nonatomic, strong) UIScrollView *pageScrollView;
 @property (nonatomic, strong) UIView *contentView;
@@ -23,6 +23,10 @@
 @property (nonatomic, strong) UIPanGestureRecognizer *panGesture;
 @property (nonatomic, assign) CGPoint panGestureStartPoint;
 
+@property (strong, nonatomic) UIButton *closeButton;
+@property (strong, nonatomic) UIButton *menuButton;
+
+@property (nonatomic, assign) UIEdgeInsets insets;
 @end
 
 @implementation NHImageViewController
@@ -33,61 +37,84 @@
 
     self.view.backgroundColor = [UIColor blackColor];
 
+    self.pages = self.imagesArray.count;
+    self.currentPage = 0;
+
+    self.insets = UIEdgeInsetsMake(0, 10, 0, 10);
+
     self.pageScrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
     self.pageScrollView.backgroundColor = [UIColor redColor];
     self.pageScrollView.pagingEnabled = YES;
-    self.pageScrollView.alwaysBounceHorizontal = NO;
+    self.pageScrollView.alwaysBounceHorizontal = YES;
     self.pageScrollView.delegate = self;
 
     [self.view addSubview:self.pageScrollView];
 
-    self.contentView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 3 * self.view.bounds.size.width, self.view.bounds.size.height)];
+    self.contentView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.pages * self.view.bounds.size.width, self.view.bounds.size.height)];
 
     self.contentView.backgroundColor = [UIColor grayColor];
 
     [self.pageScrollView addSubview:self.contentView];
 
-//    self.pageScrollView.contentSize = self.contentView.bounds.size;
-
-//    self.pageScrollView.scrollEnabled = NO;
-//    self.pageScrollView.delaysContentTouches = NO;
-//    self.pageScrollView.pinchGestureRecognizer.enabled = NO;
-    for (int i = 0; i < 3; i++) {
-        NHImageScrollView *scrollView = [[NHImageScrollView alloc] initWithFrame:CGRectMake(self.view.bounds.size.width * i, 0, self.view.bounds.size.width, self.view.bounds.size.height) andImage:self.image];
+    for (int i = 0; i < self.imagesArray.count; i++) {
+        NHImageScrollView *scrollView = [[NHImageScrollView alloc] initWithFrame:CGRectMake(self.view.bounds.size.width * i, 0, self.view.bounds.size.width, self.view.bounds.size.height) andImage:self.imagesArray[i]];
 
         [self.contentView addSubview:scrollView];
     }
-//    self.scrollView =
-//    self.scrollView.backgroundColor = [UIColor clearColor];
-//    self.scrollView.bounces = YES;
-//    self.scrollView.alwaysBounceVertical = YES;
-//    self.scrollView.minimumZoomScale = 1;
-//    self.scrollView.maximumZoomScale = 5;
-//    self.scrollView.delegate = self;
-//    [self.view addSubview:self.scrollView];
     
 
     self.panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGestureAction:)];
     self.panGesture.delegate = self;
     [self.pageScrollView addGestureRecognizer:self.panGesture];
-//    [self.pageScrollView.panGestureRecognizer addTarget:self action:@selector(panGestureAction:)];
+
+    self.closeButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 50, 64)];
+    self.closeButton.backgroundColor = [UIColor lightGrayColor];
+    [self.closeButton setTitle:@"x" forState:UIControlStateNormal];
+    [self.closeButton addTarget:self action:@selector(closeButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:self.closeButton];
+
+    self.menuButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.bounds.size.width - 50, 0, 50, 64)];
+    self.menuButton.backgroundColor = [UIColor lightGrayColor];
+    [self.menuButton setTitle:@"o" forState:UIControlStateNormal];
+    [self.menuButton addTarget:self action:@selector(menuButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:self.menuButton];
+}
+
+- (void)closeButtonAction:(UIButton*)button {
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)menuButtonAction:(UIButton*)button {
+
 }
 
 - (void)hideButtons {
+    CGRect closeButtonFrame = self.closeButton.frame;
+    closeButtonFrame.origin.y = -64;
 
+    CGRect menuButtonFrame = self.menuButton.frame;
+    menuButtonFrame.origin.y = -64;
+
+    [UIView animateWithDuration:0.2 animations:^{
+        self.closeButton.frame = closeButtonFrame;
+        self.menuButton.frame = menuButtonFrame;
+    }];
 }
 
 - (void)displayButtons {
+    CGRect closeButtonFrame = self.closeButton.frame;
+    closeButtonFrame.origin.y = 0;
 
+    CGRect menuButtonFrame = self.menuButton.frame;
+    menuButtonFrame.origin.y = 0;
+
+    [UIView animateWithDuration:0.2 animations:^{
+        self.closeButton.frame = closeButtonFrame;
+        self.menuButton.frame = menuButtonFrame;
+    }];
 }
 
 - (void)panGestureAction:(UIPanGestureRecognizer*)panGesture {
-//    if (self.scrollView.zoomScale > self.scrollView.minimumZoomScale) {
-//        return;
-//    }
-
-
-
     CGPoint translation = [panGesture translationInView:self.pageScrollView];
 //
     if (ABS(translation.x) >= ABS(translation.y)
@@ -199,19 +226,16 @@
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
 
-//    [self.pageScrollView setZoomScale:1 animated:YES];
     self.pageScrollView.frame = self.view.bounds;
-    self.contentView.frame = CGRectMake(0, 0, 3 * self.pageScrollView.frame.size.width, self.pageScrollView.frame.size.height);
+    self.contentView.frame = CGRectMake(0, 0, self.pages * self.pageScrollView.frame.size.width, self.pageScrollView.frame.size.height);
     self.pageScrollView.contentSize = self.contentView.bounds.size;
+
+    self.pageScrollView.contentOffset = CGPointMake(self.currentPage * self.pageScrollView.frame.size.width, 0);
 
     [self.contentView.subviews enumerateObjectsUsingBlock:^(NHImageScrollView *obj, NSUInteger idx, BOOL *stop) {
         obj.frame = CGRectMake(self.view.bounds.size.width * idx, 0, self.view.bounds.size.width, self.view.bounds.size.height);
         [obj sizeContent];
     }];
-//        NHImageScrollView *scrollView = [[NHImageScrollView alloc] initWithFrame:CGRectMake(self.view.bounds.size.width * i, 0, self.view.bounds.size.width, self.view.bounds.size.height) andImage:self.image];
-//
-//        [self.contentView addSubview:scrollView];
-//    }
 
     [self.view layoutIfNeeded];
 }
@@ -221,7 +245,7 @@
 
     if (self.currentPage != page
         && page >= 0
-        && page < 3) {
+        && page < self.pages) {
         [((NHImageScrollView*)self.contentView.subviews[self.currentPage]) setZoomScale:1 animated:YES];
         self.currentPage = page;
 
@@ -247,7 +271,7 @@
 
 + (void)showImage:(UIImage*)image inViewController:(UIViewController*)controller {
     NHImageViewController *imageViewController = [[NHImageViewController alloc] init];
-    imageViewController.image = image;
+    imageViewController.imagesArray = @[image, image];
     imageViewController.parentPresentationStyle = controller.modalPresentationStyle;
     controller.modalPresentationStyle = UIModalPresentationCurrentContext;
     imageViewController.modalPresentationStyle = UIModalPresentationOverCurrentContext;
