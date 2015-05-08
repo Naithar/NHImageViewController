@@ -27,10 +27,10 @@
 
 - (void)viewDidLoad {
 
-    self.view.backgroundColor = [UIColor redColor];
+    self.view.backgroundColor = [UIColor blackColor];
 
     self.scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
-    self.scrollView.backgroundColor = [UIColor greenColor];
+    self.scrollView.backgroundColor = [UIColor clearColor];
     self.scrollView.bounces = YES;
     self.scrollView.alwaysBounceVertical = YES;
     self.scrollView.minimumZoomScale = 1;
@@ -41,7 +41,7 @@
     self.contentView = [[UIImageView alloc] initWithFrame:CGRectZero];
     self.contentView.image = self.image;
     self.contentView.contentMode = UIViewContentModeScaleAspectFit;
-    self.contentView.backgroundColor = [UIColor blackColor];
+    self.contentView.backgroundColor = [UIColor clearColor];
 
     self.panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGestureAction:)];
     self.panGesture.delegate = self;
@@ -52,6 +52,14 @@
     [self sizeContent];
 
     [super viewDidLoad];
+}
+
+- (void)hideButtons {
+
+}
+
+- (void)displayButtons {
+
 }
 
 - (void)panGestureAction:(UIPanGestureRecognizer*)panGesture {
@@ -67,13 +75,20 @@
     switch (panGesture.state) {
         case UIGestureRecognizerStateBegan:
             self.panGestureStartPoint = self.scrollView.center;
-        case UIGestureRecognizerStateChanged:
+        case UIGestureRecognizerStateChanged: {
+
+            [self hideButtons];
 
             self.scrollView.panGestureRecognizer.enabled = NO;
             self.scrollView.pinchGestureRecognizer.enabled = NO;
 
             self.scrollView.center = CGPointMake(self.panGestureStartPoint.x, self.panGestureStartPoint.y + translation.y);
-            break;
+
+            CGFloat value = ABS(self.view.bounds.size.height / 2.0 - self.scrollView.center.y) / (self.view.bounds.size.height / 2.0) / 4.0;
+
+
+            self.view.backgroundColor = [self.view.backgroundColor colorWithAlphaComponent:1 - value];
+        } break;
         case UIGestureRecognizerStateEnded:
         case UIGestureRecognizerStateFailed:
         case UIGestureRecognizerStateCancelled:
@@ -81,7 +96,7 @@
             self.scrollView.panGestureRecognizer.enabled = YES;
             self.scrollView.pinchGestureRecognizer.enabled = YES;
 
-            if (ABS(velocity.y) > 500) {
+            if (ABS(velocity.y) > 1000) {
                 [UIView animateWithDuration:0.3
                                       delay:0
                                     options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionTransitionNone
@@ -122,8 +137,11 @@
                                           delay:0
                                         options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionTransitionNone
                                      animations:^{
+                                         self.view.backgroundColor = [UIColor blackColor];
                                          self.scrollView.center = self.panGestureStartPoint;
-                                     } completion:nil];
+                                     } completion:^(BOOL finished) {
+                                         [self displayButtons];
+                                     }];
                 }
             }
             break;
@@ -238,7 +256,6 @@
     imageViewController.image = image;
     imageViewController.parentPresentationStyle = controller.modalPresentationStyle;
     controller.modalPresentationStyle = UIModalPresentationCurrentContext;
-    imageViewController.modalPresentationStyle = UIModalPresentationCustom;
     imageViewController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
 
     [controller presentViewController:imageViewController animated:YES completion:nil];
