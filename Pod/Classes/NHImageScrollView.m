@@ -94,11 +94,11 @@
     if (ratio != 1) {
         if (self.frame.size.height > self.frame.size.width) {
             bounds.size.width = MIN(self.bounds.size.width, self.bounds.size.height);
-            bounds.size.height = bounds.size.width / ratio;
+            bounds.size.height = bounds.size.width / MAX(ratio, 1);
         }
         else {
             bounds.size.height = MIN(self.bounds.size.width, self.bounds.size.height);
-            bounds.size.width = bounds.size.height * ratio;
+            bounds.size.width = bounds.size.height * MAX(ratio, 1);
         }
     }
     else {
