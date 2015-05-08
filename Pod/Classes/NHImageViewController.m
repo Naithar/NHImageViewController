@@ -37,6 +37,7 @@
     self.pageScrollView.backgroundColor = [UIColor redColor];
     self.pageScrollView.pagingEnabled = YES;
     self.pageScrollView.alwaysBounceHorizontal = NO;
+    self.pageScrollView.delegate = self;
 
     [self.view addSubview:self.pageScrollView];
 
@@ -69,6 +70,7 @@
     self.panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGestureAction:)];
     self.panGesture.delegate = self;
     [self.pageScrollView addGestureRecognizer:self.panGesture];
+//    [self.pageScrollView.panGestureRecognizer addTarget:self action:@selector(panGestureAction:)];
 }
 
 - (void)hideButtons {
@@ -84,12 +86,21 @@
 //        return;
 //    }
 
+
+
     CGPoint translation = [panGesture translationInView:self.pageScrollView];
 //
-//    if (translation.x >= translation.y) {
-//        [panGesture setTranslation:CGPointZero inView:self.pageScrollView];
-//        return;
-//    }
+    if (ABS(translation.x) >= ABS(translation.y)
+        && CGPointEqualToPoint(self.panGestureStartPoint, CGPointZero)) {
+        panGesture.enabled = NO;
+        panGesture.enabled = YES;
+        self.pageScrollView.panGestureRecognizer.enabled = YES;
+        self.pageScrollView.pinchGestureRecognizer.enabled = YES;
+        self.view.backgroundColor = [UIColor blackColor];
+        self.pageScrollView.center = CGPointMake(self.view.bounds.size.width / 2, self.view.bounds.size.height / 2);
+        self.panGestureStartPoint = CGPointZero;
+        return;
+    }
 
     CGPoint velocity = [panGesture velocityInView:self.pageScrollView];
 
@@ -163,6 +174,8 @@
                                      } completion:^(BOOL finished) {
                                          [self displayButtons];
                                      }];
+
+                    self.panGestureStartPoint = CGPointZero;
                 }
             }
             break;
@@ -201,6 +214,18 @@
 //    }
 
     [self.view layoutIfNeeded];
+}
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    NSInteger page = floor(scrollView.contentOffset.x / scrollView.bounds.size.width);
+
+    if (self.currentPage != page
+        && page >= 0
+        && page < 3) {
+        [((NHImageScrollView*)self.contentView.subviews[self.currentPage]) setZoomScale:1 animated:YES];
+        self.currentPage = page;
+
+    }
 }
 
 - (void)didReceiveMemoryWarning {
