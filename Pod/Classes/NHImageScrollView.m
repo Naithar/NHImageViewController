@@ -61,6 +61,11 @@
 - (void)commonInit {
 
     self.delegate = self;
+    self.bounces = YES;
+    self.alwaysBounceVertical = YES;
+    self.minimumZoomScale = 1;
+    self.maximumZoomScale = 5;
+
     self.contentView = [[UIImageView alloc] initWithFrame:CGRectZero];
     self.contentView.image = self.image;
     self.contentView.contentMode = UIViewContentModeScaleAspectFit;
