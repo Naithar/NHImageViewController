@@ -7,18 +7,17 @@
 //
 
 #import "NHImageViewController.h"
+#import "NHImageScrollView.h"
 
 @interface NHImageViewController ()<UIScrollViewDelegate, UIGestureRecognizerDelegate>
 
 @property (nonatomic, assign) UIModalPresentationStyle parentPresentationStyle;
-
 @property (nonatomic, strong) UIImage *image;
-
-@property (nonatomic, strong) UIScrollView *scrollView;
-@property (nonatomic, strong) UIImageView *contentView;
+//@property (nonatomic, strong) NHImageScrollView *scrollView;
+@property (nonatomic, strong) UIScrollView *pageScrollView;
+@property (nonatomic, strong) UIView *contentView;
 
 @property (nonatomic, strong) UIPanGestureRecognizer *panGesture;
-
 @property (nonatomic, assign) CGPoint panGestureStartPoint;
 
 @end
@@ -27,31 +26,27 @@
 
 - (void)viewDidLoad {
 
+     [super viewDidLoad];
+
     self.view.backgroundColor = [UIColor blackColor];
 
-    self.scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
-    self.scrollView.backgroundColor = [UIColor clearColor];
-    self.scrollView.bounces = YES;
-    self.scrollView.alwaysBounceVertical = YES;
-    self.scrollView.minimumZoomScale = 1;
-    self.scrollView.maximumZoomScale = 5;
-    self.scrollView.delegate = self;
-    [self.view addSubview:self.scrollView];
+    self.pageScrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
+    self.pageScrollView.backgroundColor = [UIColor redColor];
 
-    self.contentView = [[UIImageView alloc] initWithFrame:CGRectZero];
-    self.contentView.image = self.image;
-    self.contentView.contentMode = UIViewContentModeScaleAspectFit;
-    self.contentView.backgroundColor = [UIColor clearColor];
+    [self.view addSubview:self.pageScrollView];
+
+//    self.scrollView = [[NHImageScrollView alloc] initWithFrame:self.view.bounds andImage:self.image];
+//    self.scrollView.backgroundColor = [UIColor clearColor];
+//    self.scrollView.bounces = YES;
+//    self.scrollView.alwaysBounceVertical = YES;
+//    self.scrollView.minimumZoomScale = 1;
+//    self.scrollView.maximumZoomScale = 5;
+//    self.scrollView.delegate = self;
+//    [self.view addSubview:self.scrollView];
 
     self.panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGestureAction:)];
     self.panGesture.delegate = self;
-    [self.scrollView addGestureRecognizer:self.panGesture];
-
-    [self.scrollView addSubview:self.contentView];
-
-    [self sizeContent];
-
-    [super viewDidLoad];
+    [self.pageScrollView addGestureRecognizer:self.panGesture];
 }
 
 - (void)hideButtons {
@@ -63,28 +58,26 @@
 }
 
 - (void)panGestureAction:(UIPanGestureRecognizer*)panGesture {
-    NSLog(@"action");
+//    if (self.scrollView.zoomScale > self.scrollView.minimumZoomScale) {
+//        return;
+//    }
 
-    if (self.scrollView.zoomScale > self.scrollView.minimumZoomScale) {
-        return;
-    }
-
-    CGPoint translation = [panGesture translationInView:self.scrollView];
-    CGPoint velocity = [panGesture velocityInView:self.scrollView];
+    CGPoint translation = [panGesture translationInView:self.pageScrollView];
+    CGPoint velocity = [panGesture velocityInView:self.pageScrollView];
 
     switch (panGesture.state) {
         case UIGestureRecognizerStateBegan:
-            self.panGestureStartPoint = self.scrollView.center;
+            self.panGestureStartPoint = self.pageScrollView.center;
         case UIGestureRecognizerStateChanged: {
 
             [self hideButtons];
 
-            self.scrollView.panGestureRecognizer.enabled = NO;
-            self.scrollView.pinchGestureRecognizer.enabled = NO;
+            self.pageScrollView.panGestureRecognizer.enabled = NO;
+            self.pageScrollView.pinchGestureRecognizer.enabled = NO;
 
-            self.scrollView.center = CGPointMake(self.panGestureStartPoint.x, self.panGestureStartPoint.y + translation.y);
+            self.pageScrollView.center = CGPointMake(self.panGestureStartPoint.x, self.panGestureStartPoint.y + translation.y);
 
-            CGFloat value = ABS(self.view.bounds.size.height / 2.0 - self.scrollView.center.y) / (self.view.bounds.size.height / 2.0) / 4.0;
+            CGFloat value = ABS(self.view.bounds.size.height / 2.0 - self.pageScrollView.center.y) / (self.view.bounds.size.height / 2.0) / 3.0;
 
 
             self.view.backgroundColor = [self.view.backgroundColor colorWithAlphaComponent:1 - value];
@@ -93,16 +86,16 @@
         case UIGestureRecognizerStateFailed:
         case UIGestureRecognizerStateCancelled:
 
-            self.scrollView.panGestureRecognizer.enabled = YES;
-            self.scrollView.pinchGestureRecognizer.enabled = YES;
+            self.pageScrollView.panGestureRecognizer.enabled = YES;
+            self.pageScrollView.pinchGestureRecognizer.enabled = YES;
 
             if (ABS(velocity.y) > 1000) {
                 [UIView animateWithDuration:0.3
                                       delay:0
                                     options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionTransitionNone
                                  animations:^{
-                                     self.scrollView.center = CGPointMake(self.panGestureStartPoint.x,
-                                                                          2 * self.scrollView.frame.size.height * (velocity.y < 0 ? -1 : 1));
+                                     self.pageScrollView.center = CGPointMake(self.panGestureStartPoint.x,
+                                                                          1.5 * self.pageScrollView.frame.size.height * (velocity.y < 0 ? -1 : 1));
                                  } completion:^(BOOL finished) {
                                      [self dismissViewControllerAnimated:YES completion:nil];
                                  }];
@@ -110,24 +103,24 @@
 
             }
             else {
-                if (self.scrollView.center.y < 0) {
+                if (self.pageScrollView.center.y < 0) {
                     [UIView animateWithDuration:0.3
                                           delay:0
                                         options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionTransitionNone
                                      animations:^{
-                                         self.scrollView.center = CGPointMake(self.panGestureStartPoint.x,
-                                                                              -2 * self.scrollView.frame.size.height);
+                                         self.pageScrollView.center = CGPointMake(self.panGestureStartPoint.x,
+                                                                              -1.5 * self.pageScrollView.frame.size.height);
                                      } completion:^(BOOL finished) {
                                          [self dismissViewControllerAnimated:YES completion:nil];
                                      }];
                 }
-                else if (self.scrollView.center.y > self.view.bounds.size.height) {
+                else if (self.pageScrollView.center.y > self.view.bounds.size.height) {
                     [UIView animateWithDuration:0.3
                                           delay:0
                                         options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionTransitionNone
                                      animations:^{
-                                         self.scrollView.center = CGPointMake(self.panGestureStartPoint.x,
-                                                                              2 * self.scrollView.frame.size.height);
+                                         self.pageScrollView.center = CGPointMake(self.panGestureStartPoint.x,
+                                                                              1.5 * self.pageScrollView.frame.size.height);
                                      } completion:^(BOOL finished) {
                                          [self dismissViewControllerAnimated:YES completion:nil];
                                      }];
@@ -138,7 +131,7 @@
                                         options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionTransitionNone
                                      animations:^{
                                          self.view.backgroundColor = [UIColor blackColor];
-                                         self.scrollView.center = self.panGestureStartPoint;
+                                         self.pageScrollView.center = self.panGestureStartPoint;
                                      } completion:^(BOOL finished) {
                                          [self displayButtons];
                                      }];
@@ -162,76 +155,13 @@
     return gestureRecognizer.view == otherGestureRecognizer.view;
 }
 
-- (void)sizeContent {
-    self.scrollView.frame = self.view.bounds;
-
-    [self.contentView sizeToFit];
-
-    CGRect bounds = self.contentView.frame;
-
-    CGFloat ratio = bounds.size.width / bounds.size.height;
-
-    if (ratio != 1) {
-        if (self.scrollView.frame.size.height > self.scrollView.frame.size.width) {
-            bounds.size.width = MIN(self.scrollView.bounds.size.width, self.scrollView.bounds.size.height);
-            bounds.size.height = bounds.size.width / ratio;
-        }
-        else {
-            bounds.size.height = MIN(self.scrollView.bounds.size.width, self.scrollView.bounds.size.height);
-            bounds.size.width = bounds.size.height * ratio;
-        }
-    }
-    else {
-        bounds.size.width = MIN(self.scrollView.bounds.size.width, self.scrollView.bounds.size.height);
-        bounds.size.width -= 10;
-        bounds.size.height = bounds.size.width;
-    }
-
-    self.contentView.frame = bounds;
-    self.contentView.center = CGPointMake(self.scrollView.bounds.size.width / 2, self.scrollView.bounds.size.height / 2);
-
-    [self scrollViewDidZoom:self.scrollView];
-}
-
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
 
-    [self.scrollView setZoomScale:1 animated:YES];
-    [self sizeContent];
+//    [self.pageScrollView setZoomScale:1 animated:YES];
+    self.pageScrollView.frame = self.view.bounds;
 
     [self.view layoutIfNeeded];
-}
-
-- (void)scrollViewDidZoom:(UIScrollView *)scrollView {
-    if (scrollView.zoomScale == 1) {
-        self.scrollView.contentInset = UIEdgeInsetsZero;
-        return;
-    }
-
-    CGSize zoomedSize = self.contentView.bounds.size;
-    zoomedSize.width *= self.scrollView.zoomScale;
-    zoomedSize.height *= self.scrollView.zoomScale;
-
-    CGFloat verticalOffset = 0;
-    CGFloat horizontalOffset = 0;
-
-    if (zoomedSize.width < self.scrollView.bounds.size.width) {
-        horizontalOffset = (self.scrollView.bounds.size.width - zoomedSize.width) / 2.0;
-    }
-
-    if (zoomedSize.height < self.scrollView.bounds.size.height) {
-        verticalOffset = (self.scrollView.bounds.size.height - zoomedSize.height) / 2.0;
-    }
-
-    self.scrollView.contentInset = UIEdgeInsetsMake(verticalOffset - self.contentView.frame.origin.y,
-                                                    horizontalOffset - self.contentView.frame.origin.x,
-                                                    verticalOffset + self.contentView.frame.origin.y,
-                                                    horizontalOffset + self.contentView.frame.origin.x);
-}
-
-
-- (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView {
-    return self.contentView;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -256,6 +186,7 @@
     imageViewController.image = image;
     imageViewController.parentPresentationStyle = controller.modalPresentationStyle;
     controller.modalPresentationStyle = UIModalPresentationCurrentContext;
+    imageViewController.modalPresentationStyle = UIModalPresentationOverCurrentContext;
     imageViewController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
 
     [controller presentViewController:imageViewController animated:YES completion:nil];
