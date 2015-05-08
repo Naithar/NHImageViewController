@@ -11,8 +11,9 @@
 @interface NHImageScrollView : UIScrollView
 
 @property (nonatomic, strong) UIImage *image;
+@property (nonatomic, readonly, strong) UIImageView *contentView;
 
 - (instancetype)initWithFrame:(CGRect)frame andImage:(UIImage*)image;
 - (void)sizeContent;
-
+- (void)zoomToPoint:(CGPoint)point andScale:(CGFloat)scale;
 @end

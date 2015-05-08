@@ -26,11 +26,16 @@
 @property (nonatomic, assign) CGPoint panGestureStartPoint;
 
 @property (strong, nonatomic) UIButton *closeButton;
-@property (strong, nonatomic) UIButton *menuButton;
+@property (strong, nonatomic) UIButton *optionsButton;
 
 @property (strong, nonatomic) UILabel *noteLabel;
 
 @property (nonatomic, assign) CGFloat pageSpacing;
+
+@property (nonatomic, assign) BOOL interfaceHidden;
+
+@property (nonatomic, strong) UITapGestureRecognizer *tapGesture;
+@property (nonatomic, strong) UITapGestureRecognizer *doubleTapGesture;
 @end
 
 @implementation NHImageViewController
@@ -39,6 +44,7 @@
 
      [super viewDidLoad];
 
+    _interfaceHidden = NO;
     self.view.backgroundColor = [UIColor blackColor];
 
     self.pages = self.imagesArray.count;
@@ -48,7 +54,7 @@
     }
 
     self.pageScrollView = [[UIScrollView alloc] initWithFrame:UIEdgeInsetsInsetRect(self.view.bounds, UIEdgeInsetsMake(0, -self.pageSpacing, 0, -self.pageSpacing))];
-    self.pageScrollView.backgroundColor = [UIColor redColor];
+    self.pageScrollView.backgroundColor = [UIColor clearColor];
     self.pageScrollView.pagingEnabled = YES;
     self.pageScrollView.alwaysBounceHorizontal = NO;
     self.pageScrollView.delegate = self;
@@ -59,7 +65,7 @@
 
     self.contentView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.pages * self.pageScrollView.bounds.size.width, self.view.bounds.size.height)];
 
-    self.contentView.backgroundColor = [UIColor grayColor];
+    self.contentView.backgroundColor = [UIColor clearColor];
 
     [self.pageScrollView addSubview:self.contentView];
 
@@ -74,25 +80,41 @@
     self.panGesture.delegate = self;
     [self.pageScrollView addGestureRecognizer:self.panGesture];
 
+    self.doubleTapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(doubleTapGestureAction:)];
+    self.doubleTapGesture.numberOfTapsRequired = 2;
+    [self.pageScrollView addGestureRecognizer:self.doubleTapGesture];
+
+    self.tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapGestureAction:)];
+    self.tapGesture.numberOfTapsRequired = 1;
+    [self.tapGesture requireGestureRecognizerToFail:self.doubleTapGesture];
+    [self.tapGesture requireGestureRecognizerToFail:self.panGesture];
+    [self.pageScrollView addGestureRecognizer:self.tapGesture];
+
     self.closeButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 50, 64)];
-    self.closeButton.backgroundColor = [UIColor lightGrayColor];
-    [self.closeButton setTitle:@"x" forState:UIControlStateNormal];
+    self.closeButton.backgroundColor = [UIColor clearColor];
+    [self.closeButton setTitle:nil forState:UIControlStateNormal];
+    [self.closeButton setImage:[[UIImage imageNamed:@"NHImageView.close.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
     [self.closeButton addTarget:self action:@selector(closeButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+    self.closeButton.tintColor = [UIColor whiteColor];
     [self.view addSubview:self.closeButton];
 
-    self.menuButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.bounds.size.width - 50, 0, 50, 64)];
-    self.menuButton.backgroundColor = [UIColor lightGrayColor];
-    [self.menuButton setTitle:@"o" forState:UIControlStateNormal];
-    [self.menuButton addTarget:self action:@selector(menuButtonAction:) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:self.menuButton];
+
+    self.optionsButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.bounds.size.width - 50, 0, 50, 64)];
+    self.optionsButton.backgroundColor = [UIColor clearColor];
+    [self.optionsButton setTitle:nil forState:UIControlStateNormal];
+    [self.optionsButton setImage:[[UIImage imageNamed:@"NHImageView.more.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
+    [self.optionsButton addTarget:self action:@selector(optionsButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+    self.optionsButton.tintColor = [UIColor whiteColor];
+    [self.view addSubview:self.optionsButton];
 
     self.noteLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height - 64, self.view.bounds.size.width, 64)];
     self.noteLabel.textAlignment = NSTextAlignmentCenter;
-    self.noteLabel.text = @"notedsa dsa das d as ds ad as d as ds adjhsab jda gdiuas dasui udiagu dga gdajg djagj dgaj gdag dhjasg dgah dagjdas";
+    self.noteLabel.text = self.note;
     self.noteLabel.lineBreakMode = NSLineBreakByTruncatingTail;
     self.noteLabel.numberOfLines = 2;
     self.noteLabel.textColor = [UIColor whiteColor];
     self.noteLabel.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.5];
+    self.noteLabel.hidden = self.note == nil || [self.note length] == 0;
 
     [self.view addSubview:self.noteLabel];
 }
@@ -101,15 +123,44 @@
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
-- (void)menuButtonAction:(UIButton*)button {
+- (void)optionsButtonAction:(UIButton*)button {
 
 }
 
-- (void)hideButtons {
+- (void)doubleTapGestureAction:(UITapGestureRecognizer*)recognizer {
+
+    NHImageScrollView *currentPage = ((NHImageScrollView*)[[self contentView] subviews][self.currentPage]);
+
+    if (currentPage.zoomScale > 1.5) {
+        [currentPage setZoomScale:1 animated:YES];
+    }
+    else {
+        CGPoint location = [recognizer locationInView:currentPage.contentView];
+
+        [currentPage zoomToPoint:location andScale:5];
+    }
+
+}
+
+- (void)tapGestureAction:(UITapGestureRecognizer*)recognizer {
+    if (self.interfaceHidden) {
+        [self displayInterface];
+    }
+    else {
+        [self hideInterface];
+    }
+}
+
+- (void)hideInterface {
+    if (self.interfaceHidden) {
+        return;
+    }
+
+    self.interfaceHidden = YES;
     CGRect closeButtonFrame = self.closeButton.frame;
     closeButtonFrame.origin.y = -64;
 
-    CGRect menuButtonFrame = self.menuButton.frame;
+    CGRect menuButtonFrame = self.optionsButton.frame;
     menuButtonFrame.origin.y = -64;
 
     CGRect noteLabelFrame = self.noteLabel.frame;
@@ -117,12 +168,17 @@
 
     [UIView animateWithDuration:0.2 animations:^{
         self.closeButton.frame = closeButtonFrame;
-        self.menuButton.frame = menuButtonFrame;
+        self.optionsButton.frame = menuButtonFrame;
         self.noteLabel.frame = noteLabelFrame;
     }];
 }
 
-- (void)displayButtons {
+- (void)displayInterface {
+    if (!self.interfaceHidden) {
+        return;
+    }
+
+    self.interfaceHidden = NO;
     CGRect closeButtonFrame = CGRectMake(0, 0, 50, 64);
 
     CGRect menuButtonFrame = CGRectMake(self.view.bounds.size.width - 50, 0, 50, 64);
@@ -131,7 +187,7 @@
 
     [UIView animateWithDuration:0.2 animations:^{
         self.closeButton.frame = closeButtonFrame;
-        self.menuButton.frame = menuButtonFrame;
+        self.optionsButton.frame = menuButtonFrame;
         self.noteLabel.frame = noteLabelFrame;
     }];
 }
@@ -158,7 +214,7 @@
             self.panGestureStartPoint = self.pageScrollView.center;
         case UIGestureRecognizerStateChanged: {
 
-            [self hideButtons];
+            [self hideInterface];
 
             self.pageScrollView.panGestureRecognizer.enabled = NO;
             self.pageScrollView.pinchGestureRecognizer.enabled = NO;
@@ -221,7 +277,7 @@
                                          self.view.backgroundColor = [UIColor blackColor];
                                          self.pageScrollView.center = self.panGestureStartPoint;
                                      } completion:^(BOOL finished) {
-                                         [self displayButtons];
+                                         [self displayInterface];
                                      }];
 
                     self.panGestureStartPoint = CGPointZero;
@@ -257,7 +313,7 @@
     [self.pageScrollView setNeedsDisplay];
 
     self.closeButton.frame = CGRectMake(0, 0, 50, 64);
-    self.menuButton.frame = CGRectMake(self.view.bounds.size.width - 50, 0, 50, 64);
+    self.optionsButton.frame = CGRectMake(self.view.bounds.size.width - 50, 0, 50, 64);
     self.noteLabel.frame = CGRectMake(0, self.view.bounds.size.height - 64, self.view.bounds.size.width, 64);
     self.pageScrollView.contentOffset = CGPointMake(page * self.pageScrollView.frame.size.width, 0);
 
@@ -308,6 +364,7 @@
     controller.modalPresentationStyle = UIModalPresentationCurrentContext;
     imageViewController.modalPresentationStyle = UIModalPresentationOverCurrentContext;
     imageViewController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
+    imageViewController.note = @"note";
 
     [controller presentViewController:imageViewController animated:YES completion:nil];
 

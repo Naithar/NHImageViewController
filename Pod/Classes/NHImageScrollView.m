@@ -65,24 +65,30 @@
     self.alwaysBounceHorizontal = NO;
     self.minimumZoomScale = 1;
     self.maximumZoomScale = 5;
-    self.backgroundColor = [UIColor greenColor];
+    self.backgroundColor = [UIColor clearColor];
 
     self.contentView = [[UIImageView alloc] initWithFrame:CGRectZero];
     self.contentView.image = self.image;
     self.contentView.contentMode = UIViewContentModeScaleAspectFit;
-    self.contentView.backgroundColor = [UIColor yellowColor];
+    self.contentView.backgroundColor = [UIColor clearColor];
     [self addSubview:self.contentView];
 
     [self sizeContent];
 }
 
-//
-//- (void)layoutSubviews {
-////    [self setZoomScale:1 animated:YES];
-//    [super layoutSubviews];
-//    [self sizeContent];
-//    [self layoutIfNeeded];
-//}
+- (void)zoomToPoint:(CGPoint)point andScale:(CGFloat)scale {
+    CGRect zoomRect = CGRectZero;
+
+    zoomRect.size.width = self.bounds.size.width / scale;
+    zoomRect.size.height = self.bounds.size.height / scale;
+
+    zoomRect.origin.x = point.x - (zoomRect.size.width / 2);
+    zoomRect.origin.y = point.y - (zoomRect.size.height / 2);
+
+    [self zoomToRect:zoomRect animated:YES];
+
+    [self setZoomScale:scale animated:YES];
+}
 
 - (void)sizeContent {
     [self.contentView sizeToFit];

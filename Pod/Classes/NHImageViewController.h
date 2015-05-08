@@ -11,7 +11,7 @@
 @interface NHImageViewController : UIViewController
 
 @property (strong, readonly, nonatomic) UIButton *closeButton;
-@property (strong, readonly, nonatomic) UIButton *menuButton;
+@property (strong, readonly, nonatomic) UIButton *optionsButton;
 
 @property (strong, readonly, nonatomic) UILabel *noteLabel;
 
