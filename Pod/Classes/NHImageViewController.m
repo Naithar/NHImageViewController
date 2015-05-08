@@ -7,16 +7,12 @@
 //
 
 #import "NHImageViewController.h"
-//
-//#define currentOrientation \
-//([UIScreen mainScreen].bounds.size.width > [UIScreen mainScreen].bounds.size.height) \
-//? UIDeviceOrientationLandscapeLeft \
-//: UIDeviceOrientationPortrait
-
 
 @interface NHImageViewController ()<UIScrollViewDelegate, UIGestureRecognizerDelegate>
 
-@property (nonatomic, copy) UIImage *image;
+@property (nonatomic, assign) UIModalPresentationStyle parentPresentationStyle;
+
+@property (nonatomic, strong) UIImage *image;
 
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) UIImageView *contentView;
@@ -65,7 +61,6 @@
         return;
     }
 
-//    CGPoint currentPoint = [panGesture locationInView:self.scrollView];
     CGPoint translation = [panGesture translationInView:self.scrollView];
     CGPoint velocity = [panGesture velocityInView:self.scrollView];
 
@@ -85,7 +80,6 @@
 
             self.scrollView.panGestureRecognizer.enabled = YES;
             self.scrollView.pinchGestureRecognizer.enabled = YES;
-
 
             if (ABS(velocity.y) > 500) {
                 [UIView animateWithDuration:0.3
@@ -226,9 +220,26 @@
     [super didReceiveMemoryWarning];
 }
 
+- (void)dismissViewControllerAnimated:(BOOL)flag completion:(void (^)(void))completion {
+
+    UIViewController *presentingViewController = self.presentingViewController;
+
+    [super dismissViewControllerAnimated:flag completion:^{
+        if (completion) {
+            completion();
+        }
+
+        presentingViewController.modalPresentationStyle = self.parentPresentationStyle;
+    }];
+}
+
 + (void)showImage:(UIImage*)image inViewController:(UIViewController*)controller {
     NHImageViewController *imageViewController = [[NHImageViewController alloc] init];
     imageViewController.image = image;
+    imageViewController.parentPresentationStyle = controller.modalPresentationStyle;
+    controller.modalPresentationStyle = UIModalPresentationCurrentContext;
+    imageViewController.modalPresentationStyle = UIModalPresentationCustom;
+    imageViewController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
 
     [controller presentViewController:imageViewController animated:YES completion:nil];
 
