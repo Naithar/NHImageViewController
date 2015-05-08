@@ -83,6 +83,10 @@
         case UIGestureRecognizerStateFailed:
         case UIGestureRecognizerStateCancelled:
 
+            self.scrollView.panGestureRecognizer.enabled = YES;
+            self.scrollView.pinchGestureRecognizer.enabled = YES;
+
+
             if (ABS(velocity.y) > 500) {
                 [UIView animateWithDuration:0.3
                                       delay:0
