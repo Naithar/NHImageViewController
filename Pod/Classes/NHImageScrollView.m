@@ -62,7 +62,8 @@
 
     self.delegate = self;
     self.bounces = YES;
-    self.alwaysBounceVertical = YES;
+    self.alwaysBounceVertical = NO;
+    self.alwaysBounceHorizontal = NO;
     self.minimumZoomScale = 1;
     self.maximumZoomScale = 5;
 
@@ -75,13 +76,13 @@
     [self sizeContent];
 }
 
-
-- (void)layoutSubviews {
-    [self setZoomScale:1 animated:YES];
-    [super layoutSubviews];
-    [self sizeContent];
-    [self layoutIfNeeded];
-}
+//
+//- (void)layoutSubviews {
+////    [self setZoomScale:1 animated:YES];
+//    [super layoutSubviews];
+//    [self sizeContent];
+//    [self layoutIfNeeded];
+//}
 
 - (void)sizeContent {
     [self.contentView sizeToFit];

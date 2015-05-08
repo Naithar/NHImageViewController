@@ -36,7 +36,7 @@
     self.pageScrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
     self.pageScrollView.backgroundColor = [UIColor redColor];
     self.pageScrollView.pagingEnabled = YES;
-    self.pageScrollView.alwaysBounceHorizontal = YES;
+    self.pageScrollView.alwaysBounceHorizontal = NO;
 
     [self.view addSubview:self.pageScrollView];
 
@@ -46,10 +46,11 @@
 
     [self.pageScrollView addSubview:self.contentView];
 
-    self.pageScrollView.contentSize = self.contentView.bounds.size;
+//    self.pageScrollView.contentSize = self.contentView.bounds.size;
 
-    self.pageScrollView.delaysContentTouches = NO;
-
+//    self.pageScrollView.scrollEnabled = NO;
+//    self.pageScrollView.delaysContentTouches = NO;
+//    self.pageScrollView.pinchGestureRecognizer.enabled = NO;
     for (int i = 0; i < 3; i++) {
         NHImageScrollView *scrollView = [[NHImageScrollView alloc] initWithFrame:CGRectMake(self.view.bounds.size.width * i, 0, self.view.bounds.size.width, self.view.bounds.size.height) andImage:self.image];
 
@@ -63,10 +64,11 @@
 //    self.scrollView.maximumZoomScale = 5;
 //    self.scrollView.delegate = self;
 //    [self.view addSubview:self.scrollView];
+    
 
-//    self.panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGestureAction:)];
-//    self.panGesture.delegate = self;
-//    [self.pageScrollView addGestureRecognizer:self.panGesture];
+    self.panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGestureAction:)];
+    self.panGesture.delegate = self;
+    [self.pageScrollView addGestureRecognizer:self.panGesture];
 }
 
 - (void)hideButtons {
@@ -84,10 +86,10 @@
 
     CGPoint translation = [panGesture translationInView:self.pageScrollView];
 //
-    if (translation.x >= translation.y) {
-        [panGesture setTranslation:CGPointZero inView:self.pageScrollView];
-        return;
-    }
+//    if (translation.x >= translation.y) {
+//        [panGesture setTranslation:CGPointZero inView:self.pageScrollView];
+//        return;
+//    }
 
     CGPoint velocity = [panGesture velocityInView:self.pageScrollView];
 
@@ -189,8 +191,9 @@
     self.contentView.frame = CGRectMake(0, 0, 3 * self.pageScrollView.frame.size.width, self.pageScrollView.frame.size.height);
     self.pageScrollView.contentSize = self.contentView.bounds.size;
 
-    [self.contentView.subviews enumerateObjectsUsingBlock:^(UIView *obj, NSUInteger idx, BOOL *stop) {
+    [self.contentView.subviews enumerateObjectsUsingBlock:^(NHImageScrollView *obj, NSUInteger idx, BOOL *stop) {
         obj.frame = CGRectMake(self.view.bounds.size.width * idx, 0, self.view.bounds.size.width, self.view.bounds.size.height);
+        [obj sizeContent];
     }];
 //        NHImageScrollView *scrollView = [[NHImageScrollView alloc] initWithFrame:CGRectMake(self.view.bounds.size.width * i, 0, self.view.bounds.size.width, self.view.bounds.size.height) andImage:self.image];
 //
