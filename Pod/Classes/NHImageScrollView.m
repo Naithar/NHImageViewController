@@ -65,11 +65,12 @@
     self.alwaysBounceHorizontal = NO;
     self.minimumZoomScale = 1;
     self.maximumZoomScale = 5;
+    self.backgroundColor = [UIColor greenColor];
 
     self.contentView = [[UIImageView alloc] initWithFrame:CGRectZero];
     self.contentView.image = self.image;
     self.contentView.contentMode = UIViewContentModeScaleAspectFit;
-    self.contentView.backgroundColor = [UIColor clearColor];
+    self.contentView.backgroundColor = [UIColor yellowColor];
     [self addSubview:self.contentView];
 
     [self sizeContent];
@@ -92,22 +93,22 @@
 
     if (ratio != 1) {
         if (self.frame.size.height > self.frame.size.width) {
-            bounds.size.width = MIN(self.bounds.size.width, self.bounds.size.height);
+            bounds.size.width = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
             bounds.size.height = bounds.size.width / MAX(ratio, 1);
         }
         else {
-            bounds.size.height = MIN(self.bounds.size.width, self.bounds.size.height);
+            bounds.size.height = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
             bounds.size.width = bounds.size.height * MAX(ratio, 1);
         }
     }
     else {
-        bounds.size.width = MIN(self.bounds.size.width, self.bounds.size.height);
-        bounds.size.width -= 10;
+        bounds.size.width = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
         bounds.size.height = bounds.size.width;
     }
 
     self.contentView.frame = bounds;
     self.contentView.center = CGPointMake(self.bounds.size.width / 2, self.bounds.size.height / 2);
+    self.contentSize = CGSizeZero;
 
     [self scrollViewDidZoom:self];
 }
@@ -115,6 +116,7 @@
 
 - (void)scrollViewDidZoom:(UIScrollView *)scrollView {
     if (scrollView.zoomScale == self.minimumZoomScale) {
+        self.contentSize = CGSizeZero;
         self.contentInset = UIEdgeInsetsZero;
         return;
     }

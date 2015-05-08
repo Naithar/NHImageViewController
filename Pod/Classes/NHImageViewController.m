@@ -26,7 +26,7 @@
 @property (strong, nonatomic) UIButton *closeButton;
 @property (strong, nonatomic) UIButton *menuButton;
 
-@property (nonatomic, assign) UIEdgeInsets insets;
+@property (nonatomic, assign) CGFloat pageSpacing;
 @end
 
 @implementation NHImageViewController
@@ -39,25 +39,26 @@
 
     self.pages = self.imagesArray.count;
     self.currentPage = 0;
+    if (self.pageSpacing == 0) {
+        self.pageSpacing = 5;
+    }
 
-    self.insets = UIEdgeInsetsMake(0, 10, 0, 10);
-
-    self.pageScrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
+    self.pageScrollView = [[UIScrollView alloc] initWithFrame:UIEdgeInsetsInsetRect(self.view.bounds, UIEdgeInsetsMake(0, -self.pageSpacing, 0, -self.pageSpacing))];
     self.pageScrollView.backgroundColor = [UIColor redColor];
     self.pageScrollView.pagingEnabled = YES;
-    self.pageScrollView.alwaysBounceHorizontal = YES;
+    self.pageScrollView.alwaysBounceHorizontal = NO;
     self.pageScrollView.delegate = self;
 
     [self.view addSubview:self.pageScrollView];
 
-    self.contentView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.pages * self.view.bounds.size.width, self.view.bounds.size.height)];
+    self.contentView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.pages * self.pageScrollView.bounds.size.width, self.view.bounds.size.height)];
 
     self.contentView.backgroundColor = [UIColor grayColor];
 
     [self.pageScrollView addSubview:self.contentView];
 
     for (int i = 0; i < self.imagesArray.count; i++) {
-        NHImageScrollView *scrollView = [[NHImageScrollView alloc] initWithFrame:CGRectMake(self.view.bounds.size.width * i, 0, self.view.bounds.size.width, self.view.bounds.size.height) andImage:self.imagesArray[i]];
+        NHImageScrollView *scrollView = [[NHImageScrollView alloc] initWithFrame:CGRectMake(self.pageSpacing * (i + 1) + (self.view.bounds.size.width + self.pageSpacing) * i, 0, self.view.bounds.size.width, self.view.bounds.size.height) andImage:self.imagesArray[i]];
 
         [self.contentView addSubview:scrollView];
     }
@@ -102,11 +103,9 @@
 }
 
 - (void)displayButtons {
-    CGRect closeButtonFrame = self.closeButton.frame;
-    closeButtonFrame.origin.y = 0;
+    CGRect closeButtonFrame = CGRectMake(0, 0, 50, 64);
 
-    CGRect menuButtonFrame = self.menuButton.frame;
-    menuButtonFrame.origin.y = 0;
+    CGRect menuButtonFrame = CGRectMake(self.view.bounds.size.width - 50, 0, 50, 64);
 
     [UIView animateWithDuration:0.2 animations:^{
         self.closeButton.frame = closeButtonFrame;
@@ -226,29 +225,40 @@
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
 
-    self.pageScrollView.frame = self.view.bounds;
+    NSInteger page = self.currentPage;
+    
+    self.pageScrollView.frame = UIEdgeInsetsInsetRect(self.view.bounds, UIEdgeInsetsMake(0, -self.pageSpacing, 0, -self.pageSpacing));
     self.contentView.frame = CGRectMake(0, 0, self.pages * self.pageScrollView.frame.size.width, self.pageScrollView.frame.size.height);
     self.pageScrollView.contentSize = self.contentView.bounds.size;
 
-    self.pageScrollView.contentOffset = CGPointMake(self.currentPage * self.pageScrollView.frame.size.width, 0);
+    [self.pageScrollView setNeedsDisplay];
+
+    self.closeButton.frame = CGRectMake(0, 0, 50, 64);
+    self.menuButton.frame = CGRectMake(self.view.bounds.size.width - 50, 0, 50, 64);
+
+    NSLog(@"current page = %@", @(self.currentPage));
+    self.pageScrollView.contentOffset = CGPointMake(page * self.pageScrollView.frame.size.width, 0);
+
 
     [self.contentView.subviews enumerateObjectsUsingBlock:^(NHImageScrollView *obj, NSUInteger idx, BOOL *stop) {
-        obj.frame = CGRectMake(self.view.bounds.size.width * idx, 0, self.view.bounds.size.width, self.view.bounds.size.height);
+        [obj setZoomScale:1];
+        obj.frame = CGRectMake(self.pageSpacing * (idx + 1) + (self.view.bounds.size.width + self.pageSpacing) * idx, 0, self.view.bounds.size.width, self.view.bounds.size.height);
         [obj sizeContent];
     }];
 
+    [self.view layoutSubviews];
     [self.view layoutIfNeeded];
+    [self.view setNeedsDisplay];
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    NSInteger page = floor(scrollView.contentOffset.x / scrollView.bounds.size.width);
+    NSInteger page = floor((scrollView.contentOffset.x) / scrollView.bounds.size.width);
 
     if (self.currentPage != page
         && page >= 0
         && page < self.pages) {
         [((NHImageScrollView*)self.contentView.subviews[self.currentPage]) setZoomScale:1 animated:YES];
         self.currentPage = page;
-
     }
 }
 
