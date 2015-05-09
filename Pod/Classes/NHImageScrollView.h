@@ -11,10 +11,16 @@
 @interface NHImageScrollView : UIScrollView
 
 @property (nonatomic, strong) UIImage *image;
-@property (nonatomic, strong) NSURL *imageURL;
+@property (nonatomic, copy) NSString *imagePath;
+
 @property (nonatomic, readonly, strong) UIImageView *contentView;
 
+- (instancetype)initWithFrame:(CGRect)frame;
 - (instancetype)initWithFrame:(CGRect)frame andImage:(UIImage*)image;
+- (instancetype)initWithFrame:(CGRect)frame andPath:(NSString*)path;
+- (instancetype)initWithFrame:(CGRect)frame image:(UIImage*)image andPath:(NSString*)path;
+
+- (void)loadImage;
 - (void)sizeContent;
 - (void)zoomToPoint:(CGPoint)point andScale:(CGFloat)scale;
 @end

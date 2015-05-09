@@ -8,6 +8,7 @@
 
 #import "NHImageScrollView.h"
 #import <MACircleProgressIndicator.h>
+#import <AFNetworking.h>
 
 @interface NHImageScrollView ()<UIScrollViewDelegate>
 
@@ -38,20 +39,23 @@
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
-    self = [super initWithFrame:frame];
-
-    if (self) {
-        [self commonInit];
-    }
-
-    return self;
+    return [self initWithFrame:frame image:nil andPath:nil];
 }
 
 - (instancetype)initWithFrame:(CGRect)frame andImage:(UIImage*)image {
+    return [self initWithFrame:frame image:image andPath:nil];
+}
+
+- (instancetype)initWithFrame:(CGRect)frame andPath:(NSString*)path {
+    return [self initWithFrame:frame image:nil andPath:path];
+}
+
+- (instancetype)initWithFrame:(CGRect)frame image:(UIImage*)image andPath:(NSString*)path {
     self = [super initWithFrame:frame];
 
     if (self) {
-        self.image = image;
+        _image = image;
+        _imagePath = path;
         [self commonInit];
     }
 
@@ -69,9 +73,8 @@
     self.backgroundColor = [UIColor clearColor];
 
     self.contentView = [[UIImageView alloc] initWithFrame:CGRectZero];
-    self.contentView.backgroundColor = [UIColor clearColor];
+    self.contentView.backgroundColor = [UIColor redColor];
     [self addSubview:self.contentView];
-    [self loadImage];
 
     self.progressIndicator = [[MACircleProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, 50, 50)];
     self.progressIndicator.backgroundColor = [UIColor clearColor];
@@ -82,6 +85,7 @@
     [self.contentView addSubview:self.progressIndicator];
 
     [self sizeContent];
+    [self loadImage];
 }
 
 - (void)zoomToPoint:(CGPoint)point andScale:(CGFloat)scale {
@@ -130,19 +134,77 @@
 }
 
 - (void)loadImage {
+    self.contentView.image = nil;
+    
     if (self.image) {
-        self.progressIndicator.hidden = YES;
-        self.contentView.contentMode = UIViewContentModeScaleAspectFit;
-        self.contentView.image = self.image;
+        [self showImage:self.image];
     }
-    else if (self.imageURL) {
+    else if (self.imagePath
+             && [self.imagePath length]) {
+        self.progressIndicator.value = 0;
         self.progressIndicator.hidden = NO;
+
+        __weak __typeof(self) weakSelf = self;
+        AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
+        manager.responseSerializer = [AFImageResponseSerializer serializer];
+        [[manager GET:@"http://www.gabriela-biechl.at/images/pias%20aura-100x100-2004-sold.jpg"
+           parameters:nil
+              success:^(AFHTTPRequestOperation *operation,
+                        id responseObject) {
+                  __strong __typeof(weakSelf) strongSelf = weakSelf;
+
+                  dispatch_async(dispatch_get_main_queue(), ^{
+                      if ([responseObject isKindOfClass:[UIImage class]]) {
+                          [strongSelf showImage:responseObject];
+                      }
+                      else if ([responseObject isKindOfClass:[NSData class]]) {
+                          [strongSelf showImage:[UIImage imageWithData:responseObject]];
+                      }
+                      else {
+                          [strongSelf showFailedImage];
+                      }
+                  });
+              } failure:^(AFHTTPRequestOperation *operation,
+                          NSError *error) {
+                  dispatch_async(dispatch_get_main_queue(), ^{
+                      __strong __typeof(weakSelf) strongSelf = weakSelf;
+                      [strongSelf showFailedImage];
+                  });
+              }] setDownloadProgressBlock:^(NSUInteger bytesRead,
+                                            long long totalBytesRead,
+                                            long long totalBytesExpectedToRead) {
+                  CGFloat value = 0;
+
+                  if (totalBytesExpectedToRead) {
+                      value = (double)totalBytesRead / (double)totalBytesExpectedToRead;
+                  }
+
+                  self.progressIndicator.value = value;
+              }];
     }
     else {
-        self.progressIndicator.hidden = YES;
-        self.contentView.contentMode = UIViewContentModeCenter;
-        self.contentView.image = [UIImage imageNamed:@"NHImageView.none.png"];
+        [self showFailedImage];
     }
+}
+
+- (void)showImage:(UIImage*)image {
+
+    if (!image) {
+        [self showFailedImage];
+        return;
+    }
+
+    self.progressIndicator.hidden = YES;
+    self.contentView.contentMode = UIViewContentModeScaleAspectFit;
+    self.contentView.image = image;
+    [self sizeContent];
+}
+
+- (void)showFailedImage {
+    self.progressIndicator.hidden = YES;
+    self.contentView.contentMode = UIViewContentModeCenter;
+    self.contentView.image = [UIImage imageNamed:@"NHImageView.none.png"];
+    [self sizeContent];
 }
 
 - (void)scrollViewDidZoom:(UIScrollView *)scrollView {
@@ -168,9 +230,9 @@
     }
 
     self.contentInset = UIEdgeInsetsMake(verticalOffset - self.contentView.frame.origin.y,
-                                                    horizontalOffset - self.contentView.frame.origin.x,
-                                                    verticalOffset + self.contentView.frame.origin.y,
-                                                    horizontalOffset + self.contentView.frame.origin.x);
+                                         horizontalOffset - self.contentView.frame.origin.x,
+                                         verticalOffset + self.contentView.frame.origin.y,
+                                         horizontalOffset + self.contentView.frame.origin.x);
 }
 
 - (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView {

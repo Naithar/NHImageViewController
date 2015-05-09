@@ -70,7 +70,7 @@
     [self.pageScrollView addSubview:self.contentView];
 
     for (int i = 0; i < self.imagesArray.count; i++) {
-        NHImageScrollView *scrollView = [[NHImageScrollView alloc] initWithFrame:CGRectMake(self.pageSpacing * (i + 1) + (self.view.bounds.size.width + self.pageSpacing) * i, 0, self.view.bounds.size.width, self.view.bounds.size.height) andImage:nil];
+        NHImageScrollView *scrollView = [[NHImageScrollView alloc] initWithFrame:CGRectMake(self.pageSpacing * (i + 1) + (self.view.bounds.size.width + self.pageSpacing) * i, 0, self.view.bounds.size.width, self.view.bounds.size.height) image:nil andPath:@"http://www.jpl.nasa.gov/spaceimages/images/mediumsize/PIA17012_ip.jpg"];
 
         [self.contentView addSubview:scrollView];
     }
@@ -140,6 +140,11 @@
         [currentPage zoomToPoint:location andScale:5];
     }
 
+}
+
+- (void)reloadCurrentPage {
+    NHImageScrollView *currentPage = ((NHImageScrollView*)[[self contentView] subviews][self.currentPage]);
+    [currentPage loadImage];
 }
 
 - (void)tapGestureAction:(UITapGestureRecognizer*)recognizer {
