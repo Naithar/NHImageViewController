@@ -12,7 +12,6 @@
 @interface NHImageScrollView ()<UIScrollViewDelegate>
 
 @property (nonatomic, strong) UIImageView *contentView;
-
 @property (nonatomic, strong) MACircleProgressIndicator *progressIndicator;
 @end
 
@@ -70,10 +69,9 @@
     self.backgroundColor = [UIColor clearColor];
 
     self.contentView = [[UIImageView alloc] initWithFrame:CGRectZero];
-    self.contentView.image = self.image;
-    self.contentView.contentMode = UIViewContentModeScaleAspectFit;
     self.contentView.backgroundColor = [UIColor clearColor];
     [self addSubview:self.contentView];
+    [self loadImage];
 
     self.progressIndicator = [[MACircleProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, 50, 50)];
     self.progressIndicator.backgroundColor = [UIColor clearColor];
@@ -131,6 +129,21 @@
     [self scrollViewDidZoom:self];
 }
 
+- (void)loadImage {
+    if (self.image) {
+        self.progressIndicator.hidden = YES;
+        self.contentView.contentMode = UIViewContentModeScaleAspectFit;
+        self.contentView.image = self.image;
+    }
+    else if (self.imageURL) {
+        self.progressIndicator.hidden = NO;
+    }
+    else {
+        self.progressIndicator.hidden = YES;
+        self.contentView.contentMode = UIViewContentModeCenter;
+        self.contentView.image = [UIImage imageNamed:@"NHImageView.none.png"];
+    }
+}
 
 - (void)scrollViewDidZoom:(UIScrollView *)scrollView {
     if (scrollView.zoomScale == self.minimumZoomScale) {

@@ -70,7 +70,7 @@
     [self.pageScrollView addSubview:self.contentView];
 
     for (int i = 0; i < self.imagesArray.count; i++) {
-        NHImageScrollView *scrollView = [[NHImageScrollView alloc] initWithFrame:CGRectMake(self.pageSpacing * (i + 1) + (self.view.bounds.size.width + self.pageSpacing) * i, 0, self.view.bounds.size.width, self.view.bounds.size.height) andImage:self.imagesArray[i]];
+        NHImageScrollView *scrollView = [[NHImageScrollView alloc] initWithFrame:CGRectMake(self.pageSpacing * (i + 1) + (self.view.bounds.size.width + self.pageSpacing) * i, 0, self.view.bounds.size.width, self.view.bounds.size.height) andImage:nil];
 
         [self.contentView addSubview:scrollView];
     }
@@ -367,7 +367,6 @@
     imageViewController.note = @"note";
 
     [controller presentViewController:imageViewController animated:YES completion:nil];
-
 }
 
 @end
