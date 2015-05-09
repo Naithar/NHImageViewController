@@ -74,7 +74,7 @@
     self.backgroundColor = [UIColor clearColor];
 
     self.contentView = [[UIImageView alloc] initWithFrame:CGRectZero];
-    self.contentView.backgroundColor = [UIColor redColor];
+    self.contentView.backgroundColor = [UIColor clearColor];
     [self addSubview:self.contentView];
 
     self.progressIndicator = [[MACircleProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, 50, 50)];
@@ -108,53 +108,53 @@
 
     CGRect bounds = self.contentView.frame;
 
-    if (!bounds.size.height) {
-        return;
-    }
+    if (bounds.size.height) {
 
-    CGFloat ratio = bounds.size.width / bounds.size.height;
 
-    if (!ratio) {
-        return;
-    }
 
-    if (ratio > 1.5) {
-        if (self.frame.size.height > self.frame.size.width) {
-            bounds.size.width = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
-            bounds.size.height = bounds.size.width / ratio;
-        }
-        else {
-            bounds.size.width = MAX(self.bounds.size.width, self.bounds.size.height) - 2;
-            bounds.size.height = bounds.size.width / ratio;
-        }
-    }
-    else if (ratio < 0.5) {
-        if (self.frame.size.height > self.frame.size.width) {
-            bounds.size.width = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
-            bounds.size.height = bounds.size.width / ratio;
-        }
-        else {
-            bounds.size.height = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
-            bounds.size.width = bounds.size.height * ratio;
-        }
-    }
-    else {
-        if (self.frame.size.height > self.frame.size.width) {
-            bounds.size.width = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
-            bounds.size.height = bounds.size.width / ratio;
-        }
-        else {
-            bounds.size.height = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
-            bounds.size.width = bounds.size.height * ratio;
+        CGFloat ratio = bounds.size.width / bounds.size.height;
+
+        if (ratio) {
+
+            if (ratio > 1.5) {
+                if (self.frame.size.height > self.frame.size.width) {
+                    bounds.size.width = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
+                    bounds.size.height = bounds.size.width / ratio;
+                }
+                else {
+                    bounds.size.width = MAX(self.bounds.size.width, self.bounds.size.height) - 2;
+                    bounds.size.height = bounds.size.width / ratio;
+                }
+            }
+            else if (ratio < 0.5) {
+                if (self.frame.size.height > self.frame.size.width) {
+                    bounds.size.width = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
+                    bounds.size.height = bounds.size.width / ratio;
+                }
+                else {
+                    bounds.size.height = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
+                    bounds.size.width = bounds.size.height * ratio;
+                }
+            }
+            else {
+                if (self.frame.size.height > self.frame.size.width) {
+                    bounds.size.width = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
+                    bounds.size.height = bounds.size.width / ratio;
+                }
+                else {
+                    bounds.size.height = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
+                    bounds.size.width = bounds.size.height * ratio;
+                }
+            }
         }
     }
 
     self.contentView.frame = bounds;
     self.contentView.center = CGPointMake(self.bounds.size.width / 2, self.bounds.size.height / 2);
     self.contentSize = CGSizeZero;
-
+    
     self.progressIndicator.center = CGPointMake(self.contentView.bounds.size.width / 2, self.contentView.bounds.size.height / 2);
-
+    
     [self scrollViewDidZoom:self];
 }
 

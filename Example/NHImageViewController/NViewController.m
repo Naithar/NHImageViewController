@@ -23,6 +23,7 @@
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [NHImageViewController presentIn:self
                                 withData:@[
+                                           @"http://wallpaperscraft.ru/image/kot_morda_ochki_tolstyy_65455_300x300.jpg",
                                            [UIImage imageNamed:@"img1.jpg"],
                                            [UIImage imageNamed:@"img2.jpg"],
                                            @"http://www.gabriela-biechl.at/images/pias%20aura-100x100-2004-sold.jpg",
