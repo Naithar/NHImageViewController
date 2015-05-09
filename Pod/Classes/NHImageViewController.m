@@ -428,6 +428,10 @@
 }
 
 + (instancetype)presentIn:(UIViewController*)controller withData:(NSArray*)dataArray andNote:(NSString*)note {
+    if (dataArray.count == 0) {
+        return nil;
+    }
+
     NHImageViewController *imageViewController = [[NHImageViewController alloc] init];
     imageViewController.imagesArray = dataArray;
     imageViewController.parentPresentationStyle = controller.modalPresentationStyle;
