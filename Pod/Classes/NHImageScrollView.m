@@ -7,11 +7,13 @@
 //
 
 #import "NHImageScrollView.h"
+#import <MACircleProgressIndicator.h>
 
 @interface NHImageScrollView ()<UIScrollViewDelegate>
 
 @property (nonatomic, strong) UIImageView *contentView;
 
+@property (nonatomic, strong) MACircleProgressIndicator *progressIndicator;
 @end
 
 @implementation NHImageScrollView
@@ -73,6 +75,14 @@
     self.contentView.backgroundColor = [UIColor clearColor];
     [self addSubview:self.contentView];
 
+    self.progressIndicator = [[MACircleProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, 50, 50)];
+    self.progressIndicator.backgroundColor = [UIColor clearColor];
+    self.progressIndicator.strokeWidth = 2;
+    self.progressIndicator.color = [UIColor whiteColor];
+    self.progressIndicator.center = CGPointMake(self.contentView.bounds.size.width / 2, self.contentView.bounds.size.height / 2);
+
+    [self.contentView addSubview:self.progressIndicator];
+
     [self sizeContent];
 }
 
@@ -115,6 +125,8 @@
     self.contentView.frame = bounds;
     self.contentView.center = CGPointMake(self.bounds.size.width / 2, self.bounds.size.height / 2);
     self.contentSize = CGSizeZero;
+
+    self.progressIndicator.center = CGPointMake(self.contentView.bounds.size.width / 2, self.contentView.bounds.size.height / 2);
 
     [self scrollViewDidZoom:self];
 }
