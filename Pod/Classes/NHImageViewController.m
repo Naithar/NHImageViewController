@@ -184,9 +184,9 @@
     }
 }
 
-- (void)hideInterface {
+- (BOOL)hideInterface {
     if (self.interfaceHidden) {
-        return;
+        return NO;
     }
 
     self.interfaceHidden = YES;
@@ -204,11 +204,13 @@
         self.optionsButton.frame = menuButtonFrame;
         self.noteLabel.frame = noteLabelFrame;
     }];
+
+    return YES;
 }
 
-- (void)displayInterface {
+- (BOOL)displayInterface {
     if (!self.interfaceHidden) {
-        return;
+        return NO;
     }
 
     self.interfaceHidden = NO;
@@ -223,6 +225,8 @@
         self.optionsButton.frame = menuButtonFrame;
         self.noteLabel.frame = noteLabelFrame;
     }];
+
+    return YES;
 }
 
 - (void)panGestureAction:(UIPanGestureRecognizer*)panGesture {
@@ -396,13 +400,41 @@
 }
 
 + (void)showImage:(UIImage*)image inViewController:(UIViewController*)controller {
+    [self showImage:image withNote:nil inViewController:controller];
+}
+
++ (void)showImage:(UIImage*)image withNote:(NSString*)note inViewController:(UIViewController*)controller {
+    [self presentIn:controller withData:@[image] andNote:note];
+}
+
++ (void)showImageAtPath:(NSString*)imagePath inViewController:(UIViewController*)controller {
+    [self showImageAtPath:imagePath withNote:nil inViewController:controller];
+}
+
++ (void)showImageAtPath:(NSString*)imagePath withNote:(NSString*)note inViewController:(UIViewController*)controller {
+    [self presentIn:controller withData:@[imagePath] andNote:note];
+}
+
++ (void)showImageAtURL:(NSURL*)imageURL inViewController:(UIViewController*)controller {
+    [self showImageAtURL:imageURL withNote:nil inViewController:controller];
+}
+
++ (void)showImageAtURL:(NSURL*)imageURL withNote:(NSString*)note inViewController:(UIViewController*)controller {
+    [self presentIn:controller withData:@[imageURL] andNote:note];
+}
+
++ (void)presentIn:(UIViewController*)controller withData:(NSArray*)dataArray {
+    [self presentIn:controller withData:dataArray andNote:nil];
+}
+
++ (void)presentIn:(UIViewController*)controller withData:(NSArray*)dataArray andNote:(NSString*)note {
     NHImageViewController *imageViewController = [[NHImageViewController alloc] init];
-    imageViewController.imagesArray = @[image];
+    imageViewController.imagesArray = dataArray;
     imageViewController.parentPresentationStyle = controller.modalPresentationStyle;
     controller.modalPresentationStyle = UIModalPresentationCurrentContext;
     imageViewController.modalPresentationStyle = UIModalPresentationOverCurrentContext;
     imageViewController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
-    imageViewController.note = @"note";
+    imageViewController.note = note;
 
     [controller presentViewController:imageViewController animated:YES completion:nil];
 }
