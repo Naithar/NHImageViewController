@@ -48,7 +48,7 @@
     self.view.backgroundColor = [UIColor blackColor];
 
     self.pages = self.imagesArray.count;
-    self.currentPage = 0;
+    
     if (self.pageSpacing == 0) {
         self.pageSpacing = 5;
     }
@@ -399,35 +399,35 @@
     }];
 }
 
-+ (void)showImage:(UIImage*)image inViewController:(UIViewController*)controller {
-    [self showImage:image withNote:nil inViewController:controller];
++ (instancetype)showImage:(UIImage*)image inViewController:(UIViewController*)controller {
+    return [self showImage:image withNote:nil inViewController:controller];
 }
 
-+ (void)showImage:(UIImage*)image withNote:(NSString*)note inViewController:(UIViewController*)controller {
-    [self presentIn:controller withData:@[image] andNote:note];
++ (instancetype)showImage:(UIImage*)image withNote:(NSString*)note inViewController:(UIViewController*)controller {
+    return [self presentIn:controller withData:@[image] andNote:note];
 }
 
-+ (void)showImageAtPath:(NSString*)imagePath inViewController:(UIViewController*)controller {
-    [self showImageAtPath:imagePath withNote:nil inViewController:controller];
++ (instancetype)showImageAtPath:(NSString*)imagePath inViewController:(UIViewController*)controller {
+    return [self showImageAtPath:imagePath withNote:nil inViewController:controller];
 }
 
-+ (void)showImageAtPath:(NSString*)imagePath withNote:(NSString*)note inViewController:(UIViewController*)controller {
-    [self presentIn:controller withData:@[imagePath] andNote:note];
++ (instancetype)showImageAtPath:(NSString*)imagePath withNote:(NSString*)note inViewController:(UIViewController*)controller {
+    return [self presentIn:controller withData:@[imagePath] andNote:note];
 }
 
-+ (void)showImageAtURL:(NSURL*)imageURL inViewController:(UIViewController*)controller {
-    [self showImageAtURL:imageURL withNote:nil inViewController:controller];
++ (instancetype)showImageAtURL:(NSURL*)imageURL inViewController:(UIViewController*)controller {
+    return [self showImageAtURL:imageURL withNote:nil inViewController:controller];
 }
 
-+ (void)showImageAtURL:(NSURL*)imageURL withNote:(NSString*)note inViewController:(UIViewController*)controller {
-    [self presentIn:controller withData:@[imageURL] andNote:note];
++ (instancetype)showImageAtURL:(NSURL*)imageURL withNote:(NSString*)note inViewController:(UIViewController*)controller {
+    return [self presentIn:controller withData:@[imageURL] andNote:note];
 }
 
-+ (void)presentIn:(UIViewController*)controller withData:(NSArray*)dataArray {
-    [self presentIn:controller withData:dataArray andNote:nil];
++ (instancetype)presentIn:(UIViewController*)controller withData:(NSArray*)dataArray {
+    return [self presentIn:controller withData:dataArray andNote:nil];
 }
 
-+ (void)presentIn:(UIViewController*)controller withData:(NSArray*)dataArray andNote:(NSString*)note {
++ (instancetype)presentIn:(UIViewController*)controller withData:(NSArray*)dataArray andNote:(NSString*)note {
     NHImageViewController *imageViewController = [[NHImageViewController alloc] init];
     imageViewController.imagesArray = dataArray;
     imageViewController.parentPresentationStyle = controller.modalPresentationStyle;
@@ -437,6 +437,12 @@
     imageViewController.note = note;
 
     [controller presentViewController:imageViewController animated:YES completion:nil];
+
+    return imageViewController;
+}
+
+- (void)setStartingPage:(NSInteger)startPage {
+    self.currentPage = startPage;
 }
 
 @end
