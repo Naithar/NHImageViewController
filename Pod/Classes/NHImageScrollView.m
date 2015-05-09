@@ -147,7 +147,7 @@
         __weak __typeof(self) weakSelf = self;
         AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
         manager.responseSerializer = [AFImageResponseSerializer serializer];
-        [[manager GET:@"http://www.gabriela-biechl.at/images/pias%20aura-100x100-2004-sold.jpg"
+        [[manager GET:self.imagePath
            parameters:nil
               success:^(AFHTTPRequestOperation *operation,
                         id responseObject) {
