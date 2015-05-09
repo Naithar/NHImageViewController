@@ -108,21 +108,45 @@
 
     CGRect bounds = self.contentView.frame;
 
-    CGFloat ratio = bounds.size.width / MAX(bounds.size.height, 1);
+    if (!bounds.size.height) {
+        return;
+    }
 
-    if (ratio != 1) {
+    CGFloat ratio = bounds.size.width / bounds.size.height;
+
+    if (!ratio) {
+        return;
+    }
+
+    if (ratio > 1.5) {
         if (self.frame.size.height > self.frame.size.width) {
             bounds.size.width = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
-            bounds.size.height = bounds.size.width / MAX(ratio, 1);
+            bounds.size.height = bounds.size.width / ratio;
+        }
+        else {
+            bounds.size.width = MAX(self.bounds.size.width, self.bounds.size.height) - 2;
+            bounds.size.height = bounds.size.width / ratio;
+        }
+    }
+    else if (ratio < 0.5) {
+        if (self.frame.size.height > self.frame.size.width) {
+            bounds.size.width = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
+            bounds.size.height = bounds.size.width / ratio;
         }
         else {
             bounds.size.height = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
-            bounds.size.width = bounds.size.height * MAX(ratio, 1);
+            bounds.size.width = bounds.size.height * ratio;
         }
     }
     else {
-        bounds.size.width = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
-        bounds.size.height = bounds.size.width;
+        if (self.frame.size.height > self.frame.size.width) {
+            bounds.size.width = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
+            bounds.size.height = bounds.size.width / ratio;
+        }
+        else {
+            bounds.size.height = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
+            bounds.size.width = bounds.size.height * ratio;
+        }
     }
 
     self.contentView.frame = bounds;
