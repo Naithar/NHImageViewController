@@ -14,6 +14,7 @@
 
 @property (nonatomic, strong) UIImageView *contentView;
 @property (nonatomic, strong) MACircleProgressIndicator *progressIndicator;
+@property (nonatomic, assign) BOOL loadingImage;
 @end
 
 @implementation NHImageScrollView
@@ -133,8 +134,15 @@
     [self scrollViewDidZoom:self];
 }
 
+- (void)saveImage {
+    if (self.image) {
+        UIImageWriteToSavedPhotosAlbum(self.image, nil, nil, nil);
+    }
+}
+
 - (void)loadImage {
     self.contentView.image = nil;
+    self.loadingImage = NO;
     
     if (self.image) {
         [self showImage:self.image];
@@ -143,6 +151,7 @@
              && [self.imagePath length]) {
         self.progressIndicator.value = 0;
         self.progressIndicator.hidden = NO;
+        self.loadingImage = YES;
 
         __weak __typeof(self) weakSelf = self;
         AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
@@ -194,13 +203,17 @@
         return;
     }
 
+    self.loadingImage = NO;
     self.progressIndicator.hidden = YES;
     self.contentView.contentMode = UIViewContentModeScaleAspectFit;
-    self.contentView.image = image;
+    self.image = image;
+    self.contentView.image = self.image;
     [self sizeContent];
 }
 
 - (void)showFailedImage {
+    self.loadingImage = NO;
+    self.image = nil;
     self.progressIndicator.hidden = YES;
     self.contentView.contentMode = UIViewContentModeCenter;
     self.contentView.image = [UIImage imageNamed:@"NHImageView.none.png"];

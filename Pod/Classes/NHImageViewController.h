@@ -15,6 +15,9 @@
 
 @property (strong, readonly, nonatomic) UILabel *noteLabel;
 
+- (void)reloadCurrentPage;
+
 + (void)showImage:(UIImage*)image inViewController:(UIViewController*)controller;
+
 
 @end

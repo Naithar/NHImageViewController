@@ -69,11 +69,33 @@
 
     [self.pageScrollView addSubview:self.contentView];
 
-    for (int i = 0; i < self.imagesArray.count; i++) {
-        NHImageScrollView *scrollView = [[NHImageScrollView alloc] initWithFrame:CGRectMake(self.pageSpacing * (i + 1) + (self.view.bounds.size.width + self.pageSpacing) * i, 0, self.view.bounds.size.width, self.view.bounds.size.height) image:nil andPath:@"http://www.jpl.nasa.gov/spaceimages/images/mediumsize/PIA17012_ip.jpg"];
+    [self.imagesArray enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+
+        UIImage *pageImage;
+        NSString *pageImagePath;
+
+        if ([obj isKindOfClass:[UIImage class]]) {
+            pageImage = obj;
+        }
+        else if ([obj isKindOfClass:[NSString class]]) {
+            pageImagePath = obj;
+        }
+        else if ([obj isKindOfClass:[NSURL class]]) {
+            pageImagePath = ((NSURL*)obj).absoluteString;
+        }
+
+        NHImageScrollView *scrollView = [[NHImageScrollView alloc]
+                                         initWithFrame:CGRectMake(self.pageSpacing * (idx + 1)
+                                                                  + (self.view.bounds.size.width
+                                                                     + self.pageSpacing) * idx,
+                                                                  0,
+                                                                  self.view.bounds.size.width,
+                                                                  self.view.bounds.size.height)
+                                         image:pageImage
+                                         andPath:pageImagePath];
 
         [self.contentView addSubview:scrollView];
-    }
+    }];
     
 
     self.panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGestureAction:)];
@@ -140,6 +162,12 @@
         [currentPage zoomToPoint:location andScale:5];
     }
 
+}
+
+- (void)saveCurerntImage {
+    NHImageScrollView *currentPage = ((NHImageScrollView*)[[self contentView] subviews][self.currentPage]);
+
+    [currentPage saveImage];
 }
 
 - (void)reloadCurrentPage {
@@ -340,7 +368,12 @@
     if (self.currentPage != page
         && page >= 0
         && page < self.pages) {
-        [((NHImageScrollView*)self.contentView.subviews[self.currentPage]) setZoomScale:1 animated:YES];
+        NHImageScrollView *currentPage = (NHImageScrollView*)self.contentView.subviews[self.currentPage];
+        if (!currentPage.image
+            && !currentPage.loadingImage) {
+            [currentPage loadImage];
+        }
+        [currentPage setZoomScale:1 animated:YES];
         self.currentPage = page;
     }
 }
@@ -364,7 +397,7 @@
 
 + (void)showImage:(UIImage*)image inViewController:(UIViewController*)controller {
     NHImageViewController *imageViewController = [[NHImageViewController alloc] init];
-    imageViewController.imagesArray = @[image, image];
+    imageViewController.imagesArray = @[image];
     imageViewController.parentPresentationStyle = controller.modalPresentationStyle;
     controller.modalPresentationStyle = UIModalPresentationCurrentContext;
     imageViewController.modalPresentationStyle = UIModalPresentationOverCurrentContext;

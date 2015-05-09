@@ -12,6 +12,7 @@
 
 @property (nonatomic, strong) UIImage *image;
 @property (nonatomic, copy) NSString *imagePath;
+@property (nonatomic, readonly, assign) BOOL loadingImage;
 
 @property (nonatomic, readonly, strong) UIImageView *contentView;
 
@@ -21,6 +22,7 @@
 - (instancetype)initWithFrame:(CGRect)frame image:(UIImage*)image andPath:(NSString*)path;
 
 - (void)loadImage;
+- (void)saveImage;
 - (void)sizeContent;
 - (void)zoomToPoint:(CGPoint)point andScale:(CGFloat)scale;
 @end
