@@ -166,13 +166,13 @@
 
 }
 
-- (void)saveCurerntImage {
+- (void)saveCurrentPageImage {
     NHImageScrollView *currentPage = ((NHImageScrollView*)[[self contentView] subviews][self.currentPage]);
 
     [currentPage saveImage];
 }
 
-- (void)reloadCurrentPage {
+- (void)reloadCurrentPageImage {
     NHImageScrollView *currentPage = ((NHImageScrollView*)[[self contentView] subviews][self.currentPage]);
     [currentPage loadImage];
 }

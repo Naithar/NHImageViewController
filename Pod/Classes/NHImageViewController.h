@@ -20,8 +20,8 @@
 - (BOOL)hideInterface;
 - (BOOL)displayInterface;
 
-- (void)saveCurerntImage;
-- (void)reloadCurrentPage;
+- (void)saveCurrentPageImage;
+- (void)reloadCurrentPageImage;
 
 + (instancetype)showImage:(UIImage*)image inViewController:(UIViewController*)controller;
 + (instancetype)showImage:(UIImage*)image withNote:(NSString*)note inViewController:(UIViewController*)controller;
