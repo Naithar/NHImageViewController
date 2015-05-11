@@ -434,7 +434,7 @@
         return nil;
     }
 
-    NHImageViewController *imageViewController = [[NHImageViewController alloc] init];
+    NHImageViewController *imageViewController = [[[self class] alloc] init];
     imageViewController.imagesArray = dataArray;
     imageViewController.parentPresentationStyle = controller.modalPresentationStyle;
     controller.modalPresentationStyle = UIModalPresentationCurrentContext;
