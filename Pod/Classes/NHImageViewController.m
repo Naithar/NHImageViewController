@@ -42,13 +42,13 @@
 
 - (void)viewDidLoad {
 
-     [super viewDidLoad];
+    [super viewDidLoad];
 
     _interfaceHidden = NO;
     self.view.backgroundColor = [UIColor blackColor];
 
     self.pages = self.imagesArray.count;
-    
+
     if (self.pageSpacing == 0) {
         self.pageSpacing = 5;
     }
@@ -96,7 +96,7 @@
 
         [self.contentView addSubview:scrollView];
     }];
-    
+
 
     self.panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGestureAction:)];
     self.panGesture.delegate = self;
@@ -131,12 +131,14 @@
 
     self.noteLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height - 64, self.view.bounds.size.width, 64)];
     self.noteLabel.textAlignment = NSTextAlignmentCenter;
-    self.noteLabel.text = self.note;
+    self.noteLabel.text = [self.note isKindOfClass:[NSNull class]] ? nil : self.note;
     self.noteLabel.lineBreakMode = NSLineBreakByTruncatingTail;
     self.noteLabel.numberOfLines = 2;
     self.noteLabel.textColor = [UIColor whiteColor];
     self.noteLabel.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.5];
-    self.noteLabel.hidden = self.note == nil || [self.note length] == 0;
+    self.noteLabel.hidden = self.note == nil
+    || [self.note isKindOfClass:[NSNull class]]
+    || [self.note length] == 0;
 
     [self.view addSubview:self.noteLabel];
 }
@@ -231,7 +233,7 @@
 
 - (void)panGestureAction:(UIPanGestureRecognizer*)panGesture {
     CGPoint translation = [panGesture translationInView:self.pageScrollView];
-//
+    //
     if (ABS(translation.x) >= ABS(translation.y)
         && CGPointEqualToPoint(self.panGestureStartPoint, CGPointZero)) {
         panGesture.enabled = NO;
@@ -276,7 +278,7 @@
                                     options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionTransitionNone
                                  animations:^{
                                      self.pageScrollView.center = CGPointMake(self.panGestureStartPoint.x,
-                                                                          1.5 * self.pageScrollView.frame.size.height * (velocity.y < 0 ? -1 : 1));
+                                                                              1.5 * self.pageScrollView.frame.size.height * (velocity.y < 0 ? -1 : 1));
                                  } completion:^(BOOL finished) {
                                      [self dismissViewControllerAnimated:YES completion:nil];
                                  }];
@@ -290,7 +292,7 @@
                                         options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionTransitionNone
                                      animations:^{
                                          self.pageScrollView.center = CGPointMake(self.panGestureStartPoint.x,
-                                                                              -1.5 * self.pageScrollView.frame.size.height);
+                                                                                  -1.5 * self.pageScrollView.frame.size.height);
                                      } completion:^(BOOL finished) {
                                          [self dismissViewControllerAnimated:YES completion:nil];
                                      }];
@@ -301,7 +303,7 @@
                                         options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionTransitionNone
                                      animations:^{
                                          self.pageScrollView.center = CGPointMake(self.panGestureStartPoint.x,
-                                                                              1.5 * self.pageScrollView.frame.size.height);
+                                                                                  1.5 * self.pageScrollView.frame.size.height);
                                      } completion:^(BOOL finished) {
                                          [self dismissViewControllerAnimated:YES completion:nil];
                                      }];
@@ -342,7 +344,7 @@
     [super viewDidLayoutSubviews];
 
     NSInteger page = self.currentPage;
-    
+
     self.pageScrollView.frame = UIEdgeInsetsInsetRect(self.view.bounds, UIEdgeInsetsMake(0, -self.pageSpacing, 0, -self.pageSpacing));
     self.contentView.frame = CGRectMake(0, 0, self.pages * self.pageScrollView.frame.size.width, self.pageScrollView.frame.size.height);
     self.pageScrollView.contentSize = self.contentView.bounds.size;
@@ -439,9 +441,9 @@
     imageViewController.modalPresentationStyle = UIModalPresentationOverCurrentContext;
     imageViewController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
     imageViewController.note = note;
-
+    
     [controller presentViewController:imageViewController animated:YES completion:nil];
-
+    
     return imageViewController;
 }
 
