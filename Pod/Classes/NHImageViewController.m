@@ -442,7 +442,7 @@
     imageViewController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
     imageViewController.note = note;
     
-    [controller presentViewController:imageViewController animated:YES completion:nil];
+    [[controller tabBarController] ?: controller presentViewController:imageViewController animated:YES completion:nil];
     
     return imageViewController;
 }
