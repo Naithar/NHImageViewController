@@ -362,6 +362,14 @@
     return YES;
 }
 
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRequireFailureOfGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+    return NO;
+}
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldBeRequiredToFailByGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+    return YES;
+}
+
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
     return gestureRecognizer.view == otherGestureRecognizer.view;
 }
@@ -460,7 +468,7 @@
         return nil;
     }
 
-    NHImageViewController *imageViewController = [[NHImageViewController alloc] init];
+    NHImageViewController *imageViewController = [[[self class] alloc] init];
     imageViewController.imagesArray = dataArray;
     imageViewController.parentPresentationStyle = controller.modalPresentationStyle;
     controller.modalPresentationStyle = UIModalPresentationCurrentContext;
@@ -468,7 +476,7 @@
     imageViewController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
     imageViewController.note = note;
     
-    [controller presentViewController:imageViewController animated:YES completion:nil];
+    [[controller tabBarController] ?: controller presentViewController:imageViewController animated:YES completion:nil];
     
     return imageViewController;
 }
