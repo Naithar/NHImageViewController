@@ -19,6 +19,16 @@
 
 @implementation NHImageScrollView
 
++ (NSCache*)imageControllerCache {
+    static dispatch_once_t token;
+    __strong static NSCache* instance = nil;
+    dispatch_once(&token, ^{
+        instance = [[NSCache alloc] init];
+    });
+
+    return instance;
+}
+
 - (instancetype)init {
     self = [super init];
 
@@ -173,47 +183,61 @@
     }
     else if (self.imagePath
              && [self.imagePath length]) {
-        self.progressIndicator.value = 0;
-        self.progressIndicator.hidden = NO;
-        self.loadingImage = YES;
 
-        __weak __typeof(self) weakSelf = self;
-        AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
-        manager.responseSerializer = [AFImageResponseSerializer serializer];
-        [[manager GET:self.imagePath
-           parameters:nil
-              success:^(AFHTTPRequestOperation *operation,
-                        id responseObject) {
-                  __strong __typeof(weakSelf) strongSelf = weakSelf;
+        UIImage *resultImage = [[[self class] imageControllerCache] objectForKey:self.imagePath];
 
-                  dispatch_async(dispatch_get_main_queue(), ^{
-                      if ([responseObject isKindOfClass:[UIImage class]]) {
-                          [strongSelf showImage:responseObject];
-                      }
-                      else if ([responseObject isKindOfClass:[NSData class]]) {
-                          [strongSelf showImage:[UIImage imageWithData:responseObject]];
-                      }
-                      else {
-                          [strongSelf showFailedImage];
-                      }
-                  });
-              } failure:^(AFHTTPRequestOperation *operation,
-                          NSError *error) {
-                  dispatch_async(dispatch_get_main_queue(), ^{
+        if (resultImage) {
+            [self showImage:resultImage];
+        }
+        else {
+            self.progressIndicator.value = 0;
+            self.progressIndicator.hidden = NO;
+            self.loadingImage = YES;
+
+            __weak __typeof(self) weakSelf = self;
+            AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
+            manager.responseSerializer = [AFImageResponseSerializer serializer];
+            [[manager GET:self.imagePath
+               parameters:nil
+                  success:^(AFHTTPRequestOperation *operation,
+                            id responseObject) {
                       __strong __typeof(weakSelf) strongSelf = weakSelf;
-                      [strongSelf showFailedImage];
-                  });
-              }] setDownloadProgressBlock:^(NSUInteger bytesRead,
-                                            long long totalBytesRead,
-                                            long long totalBytesExpectedToRead) {
-                  CGFloat value = 0;
 
-                  if (totalBytesExpectedToRead) {
-                      value = (double)totalBytesRead / (double)totalBytesExpectedToRead;
-                  }
+                      dispatch_async(dispatch_get_main_queue(), ^{
+                          if ([responseObject isKindOfClass:[UIImage class]]) {
 
-                  self.progressIndicator.value = value;
-              }];
+                              [[[strongSelf class] imageControllerCache] setObject:responseObject forKey:strongSelf.imagePath];
+
+                              [strongSelf showImage:responseObject];
+                          }
+                          else if ([responseObject isKindOfClass:[NSData class]]) {
+                              UIImage *responseImage = [UIImage imageWithData:responseObject];
+                              [[[strongSelf class] imageControllerCache] setObject:responseImage forKey:strongSelf.imagePath];
+
+                              [strongSelf showImage:responseImage];
+                          }
+                          else {
+                              [strongSelf showFailedImage];
+                          }
+                      });
+                  } failure:^(AFHTTPRequestOperation *operation,
+                              NSError *error) {
+                      dispatch_async(dispatch_get_main_queue(), ^{
+                          __strong __typeof(weakSelf) strongSelf = weakSelf;
+                          [strongSelf showFailedImage];
+                      });
+                  }] setDownloadProgressBlock:^(NSUInteger bytesRead,
+                                                long long totalBytesRead,
+                                                long long totalBytesExpectedToRead) {
+                      CGFloat value = 0;
+
+                      if (totalBytesExpectedToRead) {
+                          value = (double)totalBytesRead / (double)totalBytesExpectedToRead;
+                      }
+                      
+                      self.progressIndicator.value = value;
+                  }];
+        }
     }
     else {
         [self showFailedImage];
