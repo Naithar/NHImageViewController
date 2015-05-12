@@ -22,6 +22,8 @@
 
 - (void)saveCurrentPageImage;
 - (void)reloadCurrentPageImage;
+- (BOOL)canCopyLink;
+- (void)copyLink;
 
 + (instancetype)showImage:(UIImage*)image inViewController:(UIViewController*)controller;
 + (instancetype)showImage:(UIImage*)image withNote:(NSString*)note inViewController:(UIViewController*)controller;

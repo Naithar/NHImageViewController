@@ -177,6 +177,32 @@
     [currentPage loadImage];
 }
 
+
+- (BOOL)canCopyLink {
+    id imageData = self.imagesArray[self.currentPage];
+
+    return [imageData isKindOfClass:[NSString class]]
+    || [imageData isKindOfClass:[NSURL class]];
+}
+
+- (void)copyLink {
+    if (![self canCopyLink]) {
+        return;
+    }
+
+    id imageData = self.imagesArray[self.currentPage];
+    NSString *imageLink;
+
+    if ([imageData isKindOfClass:[NSString class]]) {
+        imageLink = imageData;
+    }
+    else if ([imageData isKindOfClass:[NSURL class]]) {
+        imageLink = ((NSURL*)imageData).absoluteString;
+    }
+
+    [[UIPasteboard generalPasteboard] setString:imageLink];
+}
+
 - (void)tapGestureAction:(UITapGestureRecognizer*)recognizer {
     if (self.interfaceHidden) {
         [self displayInterface];
