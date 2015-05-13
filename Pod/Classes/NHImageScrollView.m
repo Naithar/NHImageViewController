@@ -126,7 +126,7 @@
 
         if (ratio) {
 
-            if (ratio > 1.5) {
+            if (ratio > 1.25) {
                 if (self.frame.size.height > self.frame.size.width) {
                     bounds.size.width = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
                     bounds.size.height = bounds.size.width / ratio;
@@ -136,24 +136,24 @@
                     bounds.size.height = bounds.size.width / ratio;
                 }
             }
-            else if (ratio < 0.5) {
+            else if (ratio < 0.75) {
                 if (self.frame.size.height > self.frame.size.width) {
-                    bounds.size.width = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
-                    bounds.size.height = bounds.size.width / ratio;
+                    bounds.size.height = MAX(self.bounds.size.width, self.bounds.size.height) - 2;
+                    bounds.size.width = bounds.size.height * ratio;
                 }
                 else {
-                    bounds.size.height = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
-                    bounds.size.width = bounds.size.height * ratio;
+                    bounds.size.width = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
+                    bounds.size.height = bounds.size.width / ratio;
                 }
             }
             else {
                 if (self.frame.size.height > self.frame.size.width) {
-                    bounds.size.width = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
-                    bounds.size.height = bounds.size.width / ratio;
-                }
-                else {
                     bounds.size.height = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
                     bounds.size.width = bounds.size.height * ratio;
+                }
+                else {
+                    bounds.size.width = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
+                    bounds.size.height = bounds.size.width / ratio;
                 }
             }
         }
