@@ -148,8 +148,8 @@
             }
             else {
                 if (self.frame.size.height > self.frame.size.width) {
-                    bounds.size.height = MAX(self.bounds.size.width, self.bounds.size.height) - 2;
-                    bounds.size.width = bounds.size.height * ratio;
+                    bounds.size.width = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
+                    bounds.size.height = bounds.size.width / ratio;
                 }
                 else {
                     bounds.size.height = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
