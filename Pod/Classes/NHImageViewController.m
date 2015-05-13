@@ -472,7 +472,7 @@
     imageViewController.imagesArray = dataArray;
     imageViewController.parentPresentationStyle = controller.modalPresentationStyle;
     controller.modalPresentationStyle = UIModalPresentationCurrentContext;
-    imageViewController.modalPresentationStyle = UIModalPresentationOverCurrentContext;
+    imageViewController.modalPresentationStyle = UIModalPresentationCustom;
     imageViewController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
     imageViewController.note = note;
     
