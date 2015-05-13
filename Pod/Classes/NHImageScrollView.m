@@ -142,18 +142,18 @@
                     bounds.size.width = bounds.size.height * ratio;
                 }
                 else {
-                    bounds.size.width = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
-                    bounds.size.height = bounds.size.width / ratio;
+                    bounds.size.height = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
+                    bounds.size.width = bounds.size.height * ratio;
                 }
             }
             else {
                 if (self.frame.size.height > self.frame.size.width) {
-                    bounds.size.height = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
+                    bounds.size.height = MAX(self.bounds.size.width, self.bounds.size.height) - 2;
                     bounds.size.width = bounds.size.height * ratio;
                 }
                 else {
-                    bounds.size.width = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
-                    bounds.size.height = bounds.size.width / ratio;
+                    bounds.size.height = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
+                    bounds.size.width = bounds.size.height * ratio;
                 }
             }
         }
