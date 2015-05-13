@@ -112,7 +112,7 @@
     [self.tapGesture requireGestureRecognizerToFail:self.panGesture];
     [self.pageScrollView addGestureRecognizer:self.tapGesture];
 
-    self.closeButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 64, 64)];
+    self.closeButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 64, 80)];
     self.closeButton.backgroundColor = [UIColor clearColor];
     [self.closeButton setTitle:nil forState:UIControlStateNormal];
     [self.closeButton setImage:[[UIImage imageNamed:@"NHImageView.close.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
@@ -121,7 +121,7 @@
     [self.view addSubview:self.closeButton];
 
 
-    self.optionsButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.bounds.size.width - 64, 0, 64, 64)];
+    self.optionsButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.bounds.size.width - 64, 0, 64, 80)];
     self.optionsButton.backgroundColor = [UIColor clearColor];
     [self.optionsButton setTitle:nil forState:UIControlStateNormal];
     [self.optionsButton setImage:[[UIImage imageNamed:@"NHImageView.more.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
@@ -219,10 +219,10 @@
 
     self.interfaceHidden = YES;
     CGRect closeButtonFrame = self.closeButton.frame;
-    closeButtonFrame.origin.y = -64;
+    closeButtonFrame.origin.y = -closeButtonFrame.size.height;
 
     CGRect menuButtonFrame = self.optionsButton.frame;
-    menuButtonFrame.origin.y = -64;
+    menuButtonFrame.origin.y = -menuButtonFrame.size.height;
 
     CGRect noteLabelFrame = self.noteLabel.frame;
     noteLabelFrame.origin.y = self.view.frame.size.height;
@@ -242,9 +242,9 @@
     }
 
     self.interfaceHidden = NO;
-    CGRect closeButtonFrame = CGRectMake(0, 0, 64, 64);
+    CGRect closeButtonFrame = CGRectMake(0, 0, 64, 80);
 
-    CGRect menuButtonFrame = CGRectMake(self.view.bounds.size.width - 64, 0, 64, 64);
+    CGRect menuButtonFrame = CGRectMake(self.view.bounds.size.width - 64, 0, 64, 80);
 
     CGRect noteLabelFrame = CGRectMake(0, self.view.bounds.size.height - 64, self.view.bounds.size.width, 64);
 
@@ -385,8 +385,8 @@
 
     [self.pageScrollView setNeedsDisplay];
 
-    self.closeButton.frame = CGRectMake(0, 0, 64, 64);
-    self.optionsButton.frame = CGRectMake(self.view.bounds.size.width - 64, 0, 64, 64);
+    self.closeButton.frame = CGRectMake(0, 0, 64, 80);
+    self.optionsButton.frame = CGRectMake(self.view.bounds.size.width - 64, 0, 64, 80);
     self.noteLabel.frame = CGRectMake(0, self.view.bounds.size.height - 64, self.view.bounds.size.width, 64);
     self.pageScrollView.contentOffset = CGPointMake(page * self.pageScrollView.frame.size.width, 0);
 
