@@ -65,7 +65,7 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     self = [super init];
 
     if (self) {
-        _backgroundColor = ifNSNull([[self class] defaultSettings][kNHImageViewBackgroundColorAttributeName], nil);
+        [self commonInit];
     }
 
     return self;
@@ -75,7 +75,7 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     self = [super initWithCoder:aDecoder];
 
     if (self) {
-        _backgroundColor = ifNSNull([[self class] defaultSettings][kNHImageViewBackgroundColorAttributeName], nil);
+        [self commonInit];
     }
 
     return self;
@@ -85,7 +85,7 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
 
     if (self) {
-        _backgroundColor = ifNSNull([[self class] defaultSettings][kNHImageViewBackgroundColorAttributeName], nil);
+        [self commonInit];
     }
 
     return self;
@@ -491,18 +491,26 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    NSInteger page = floor((scrollView.contentOffset.x) / scrollView.bounds.size.width);
+    NSInteger page = round((scrollView.contentOffset.x) / scrollView.bounds.size.width);
 
     if (self.currentPage != page
         && page >= 0
         && page < self.pages) {
+        NHImageScrollView *previousPage = (NHImageScrollView*)self.contentView.subviews[self.currentPage];
+
+        [previousPage setZoomScale:1 animated:YES];
+        [previousPage sizeContent];
+
+        self.currentPage = page;
+
         NHImageScrollView *currentPage = (NHImageScrollView*)self.contentView.subviews[self.currentPage];
+
         if (!currentPage.image
             && !currentPage.loadingImage) {
             [currentPage loadImage];
         }
-        [currentPage setZoomScale:1 animated:YES];
-        self.currentPage = page;
+
+        [currentPage sizeContent];
     }
 }
 
