@@ -8,6 +8,10 @@
 
 #import <UIKit/UIKit.h>
 
+extern NSString *const kNHImageViewBackgroundColorAttributeName;
+extern NSString *const kNHImageViewTextColorAttributeName;
+extern NSString *const kNHImageViewTextFontAttributeName;
+
 @interface NHImageViewController : UIViewController
 
 @property (strong, readonly, nonatomic) UIButton *closeButton;
@@ -16,6 +20,10 @@
 @property (strong, readonly, nonatomic) UILabel *noteLabel;
 
 @property (nonatomic, strong) UIColor *backgroundColor;
+@property (nonatomic, strong) UIColor *textColor;
+@property (nonatomic, strong) UIFont *textFont;
+
++ (NSMutableDictionary*)defaultSettings;
 
 - (void)setStartingPage:(NSInteger)startPage;
 

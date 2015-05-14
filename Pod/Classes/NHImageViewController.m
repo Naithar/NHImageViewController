@@ -9,6 +9,13 @@
 #import "NHImageViewController.h"
 #import "NHImageScrollView.h"
 
+#define ifNSNull(x, y) \
+([x isKindOfClass:[NSNull class]]) ? y : (x ?: y)
+
+NSString *const kNHImageViewBackgroundColorAttributeName = @"NHImageViewBackgroundColorAttribute";
+NSString *const kNHImageViewTextColorAttributeName = @"NHImageViewTextColorAttribute";
+NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribute";
+
 @interface NHImageViewController ()<UIScrollViewDelegate, UIGestureRecognizerDelegate>
 
 @property (nonatomic, assign) UIModalPresentationStyle parentPresentationStyle;
@@ -39,6 +46,80 @@
 @end
 
 @implementation NHImageViewController
+
++ (NSMutableDictionary*)defaultSettings {
+    static dispatch_once_t token;
+    __strong static NSMutableDictionary* settings = nil;
+    dispatch_once(&token, ^{
+        settings = [@{
+                      kNHImageViewBackgroundColorAttributeName : [UIColor blackColor],
+                      kNHImageViewTextColorAttributeName : [UIColor whiteColor],
+                      kNHImageViewTextFontAttributeName : [UIFont systemFontOfSize:15]
+                      } mutableCopy];
+    });
+
+    return settings;
+}
+
+- (instancetype)init {
+    self = [super init];
+
+    if (self) {
+        _backgroundColor = ifNSNull([[self class] defaultSettings][kNHImageViewBackgroundColorAttributeName], nil);
+    }
+
+    return self;
+}
+
+- (id)initWithCoder:(NSCoder *)aDecoder {
+    self = [super initWithCoder:aDecoder];
+
+    if (self) {
+        _backgroundColor = ifNSNull([[self class] defaultSettings][kNHImageViewBackgroundColorAttributeName], nil);
+    }
+
+    return self;
+}
+
+- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+
+    if (self) {
+        _backgroundColor = ifNSNull([[self class] defaultSettings][kNHImageViewBackgroundColorAttributeName], nil);
+    }
+
+    return self;
+}
+
+- (void)commonInit {
+    _backgroundColor = ifNSNull([[self class] defaultSettings][kNHImageViewBackgroundColorAttributeName], nil);
+    _textColor = ifNSNull([[self class] defaultSettings][kNHImageViewTextColorAttributeName], nil);
+    _textFont = ifNSNull([[self class] defaultSettings][kNHImageViewTextFontAttributeName], nil);
+}
+
+- (void)setBackgroundColor:(UIColor *)backgroundColor {
+    [self willChangeValueForKey:@"backgroundColor"];
+    _backgroundColor = backgroundColor;
+
+    self.view.backgroundColor = self.backgroundColor ?: [UIColor blackColor];
+    self.noteLabel.backgroundColor = [(self.backgroundColor ?: [UIColor blackColor]) colorWithAlphaComponent:0.5];
+
+    [self didChangeValueForKey:@"backgroundColor"];
+}
+
+- (void)setTextColor:(UIColor *)textColor {
+    [self willChangeValueForKey:@"textColor"];
+    _textColor = textColor;
+    self.noteLabel.textColor = self.textColor ?: [UIColor whiteColor];
+    [self didChangeValueForKey:@"textColor"];
+}
+
+- (void)setTextFont:(UIFont *)textFont {
+    [self willChangeValueForKey:@"textFont"];
+    _textFont = textFont;
+    self.noteLabel.font = self.textFont ?: [UIFont systemFontOfSize:15];
+    [self didChangeValueForKey:@"textFont"];
+}
 
 - (void)viewDidLoad {
 
@@ -134,7 +215,8 @@
     self.noteLabel.text = [self.note isKindOfClass:[NSNull class]] ? nil : self.note;
     self.noteLabel.lineBreakMode = NSLineBreakByTruncatingTail;
     self.noteLabel.numberOfLines = 2;
-    self.noteLabel.textColor = [UIColor whiteColor];
+    self.noteLabel.textColor = self.textColor ?: [UIColor whiteColor];
+    self.noteLabel.font = self.textFont ?: [UIFont systemFontOfSize:15];
     self.noteLabel.backgroundColor = [(self.backgroundColor ?: [UIColor blackColor]) colorWithAlphaComponent:0.5];
     self.noteLabel.hidden = self.note == nil
     || [self.note isKindOfClass:[NSNull class]]
