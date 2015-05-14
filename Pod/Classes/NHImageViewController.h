@@ -15,6 +15,8 @@
 
 @property (strong, readonly, nonatomic) UILabel *noteLabel;
 
+@property (nonatomic, strong) UIColor *backgroundColor;
+
 - (void)setStartingPage:(NSInteger)startPage;
 
 - (BOOL)hideInterface;

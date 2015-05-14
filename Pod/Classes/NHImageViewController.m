@@ -45,7 +45,7 @@
     [super viewDidLoad];
 
     _interfaceHidden = NO;
-    self.view.backgroundColor = [UIColor blackColor];
+    self.view.backgroundColor = self.backgroundColor ?: [UIColor blackColor];
 
     self.pages = self.imagesArray.count;
 
@@ -135,7 +135,7 @@
     self.noteLabel.lineBreakMode = NSLineBreakByTruncatingTail;
     self.noteLabel.numberOfLines = 2;
     self.noteLabel.textColor = [UIColor whiteColor];
-    self.noteLabel.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.5];
+    self.noteLabel.backgroundColor = [(self.backgroundColor ?: [UIColor blackColor]) colorWithAlphaComponent:0.5];
     self.noteLabel.hidden = self.note == nil
     || [self.note isKindOfClass:[NSNull class]]
     || [self.note length] == 0;
@@ -271,7 +271,7 @@
         panGesture.enabled = YES;
         self.pageScrollView.panGestureRecognizer.enabled = YES;
         self.pageScrollView.pinchGestureRecognizer.enabled = YES;
-        self.view.backgroundColor = [UIColor blackColor];
+        self.view.backgroundColor = (self.backgroundColor ?: [UIColor blackColor]);
         self.pageScrollView.center = CGPointMake(self.view.bounds.size.width / 2, self.view.bounds.size.height / 2);
         self.panGestureStartPoint = CGPointZero;
         return;
@@ -344,7 +344,7 @@
                                           delay:0
                                         options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionTransitionNone
                                      animations:^{
-                                         self.view.backgroundColor = [UIColor blackColor];
+                                         self.view.backgroundColor = (self.backgroundColor ?: [UIColor blackColor]);
                                          self.pageScrollView.center = self.panGestureStartPoint;
                                      } completion:^(BOOL finished) {
                                          [self displayInterface];
