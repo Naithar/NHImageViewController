@@ -81,6 +81,8 @@
     self.alwaysBounceHorizontal = NO;
     self.minimumZoomScale = 1;
     self.maximumZoomScale = 5;
+    self.showsVerticalScrollIndicator = NO;
+    self.showsHorizontalScrollIndicator = NO;
     self.backgroundColor = [UIColor clearColor];
 
     self.contentView = [[UIImageView alloc] initWithFrame:CGRectZero];
@@ -119,9 +121,6 @@
     CGRect bounds = self.contentView.frame;
 
     if (bounds.size.height) {
-
-
-
         CGFloat ratio = bounds.size.width / bounds.size.height;
 
         if (ratio) {
@@ -162,9 +161,9 @@
     self.contentView.frame = bounds;
     self.contentView.center = CGPointMake(self.bounds.size.width / 2, self.bounds.size.height / 2);
     self.contentSize = CGSizeZero;
-    
+
     self.progressIndicator.center = CGPointMake(self.contentView.bounds.size.width / 2, self.contentView.bounds.size.height / 2);
-    
+
     [self scrollViewDidZoom:self];
 }
 
@@ -177,7 +176,7 @@
 - (void)loadImage {
     self.contentView.image = nil;
     self.loadingImage = NO;
-    
+
     if (self.image) {
         [self showImage:self.image];
     }
@@ -234,7 +233,7 @@
                       if (totalBytesExpectedToRead) {
                           value = (double)totalBytesRead / (double)totalBytesExpectedToRead;
                       }
-                      
+
                       self.progressIndicator.value = value;
                   }];
         }
@@ -269,6 +268,10 @@
 }
 
 - (void)scrollViewDidZoom:(UIScrollView *)scrollView {
+
+    scrollView.alwaysBounceVertical = scrollView.zoomScale > 1;
+    scrollView.alwaysBounceHorizontal = scrollView.zoomScale > 1;
+
     if (scrollView.zoomScale == self.minimumZoomScale) {
         self.contentSize = CGSizeZero;
         self.contentInset = UIEdgeInsetsZero;

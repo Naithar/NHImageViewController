@@ -177,7 +177,6 @@
     [currentPage loadImage];
 }
 
-
 - (BOOL)canCopyLink {
     id imageData = self.imagesArray[self.currentPage];
 
@@ -258,6 +257,12 @@
 }
 
 - (void)panGestureAction:(UIPanGestureRecognizer*)panGesture {
+
+    if (((NHImageScrollView*)[[self contentView] subviews][self.currentPage]).zoomScale > 1) {
+        self.panGestureStartPoint = CGPointZero;
+        return;
+    }
+
     CGPoint translation = [panGesture translationInView:self.pageScrollView];
     //
     if (ABS(translation.x) >= ABS(translation.y)
@@ -367,7 +372,8 @@
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldBeRequiredToFailByGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
-    return YES;
+    return gestureRecognizer.view == otherGestureRecognizer.view
+    && ![otherGestureRecognizer isKindOfClass:[UIPanGestureRecognizer class]];
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
