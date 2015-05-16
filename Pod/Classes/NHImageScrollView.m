@@ -215,7 +215,8 @@
                           FLAnimatedImage *animatedImage = [FLAnimatedImage animatedImageWithGIFData:responseObject];
 
                           if (animatedImage) {
-                              [[[self class] imageControllerCache] setObject:animatedImage forKey:strongSelf.imagePath];
+
+                              [[[strongSelf class] imageControllerCache] setObject:animatedImage forKey:strongSelf.imagePath];
                               dispatch_async(dispatch_get_main_queue(), ^{
                                   [strongSelf showAnimatedImage:animatedImage];
                               });
@@ -224,7 +225,7 @@
                               UIImage *image = [UIImage imageWithData:responseObject];
 
                               if (image) {
-                                  [[[self class] imageControllerCache] setObject:image forKey:strongSelf.imagePath];
+                                  [[[strongSelf class] imageControllerCache] setObject:image forKey:strongSelf.imagePath];
                               }
 
                               dispatch_async(dispatch_get_main_queue(), ^{
@@ -246,13 +247,14 @@
                   }] setDownloadProgressBlock:^(NSUInteger bytesRead,
                                                 long long totalBytesRead,
                                                 long long totalBytesExpectedToRead) {
+                      __strong __typeof(weakSelf) strongSelf = weakSelf;
                       CGFloat value = 0;
 
                       if (totalBytesExpectedToRead) {
                           value = (double)totalBytesRead / (double)totalBytesExpectedToRead;
                       }
 
-                      self.progressIndicator.value = value;
+                      strongSelf.progressIndicator.value = value;
                   }];
         }
     }
