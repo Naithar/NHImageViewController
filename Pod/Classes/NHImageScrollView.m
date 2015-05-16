@@ -85,7 +85,7 @@
     self.showsHorizontalScrollIndicator = NO;
     self.backgroundColor = [UIColor clearColor];
 
-    self.contentView = [[FLAnimatedImageView alloc] initWithFrame:CGRectZero];
+    self.contentView = [[FLAnimatedImageView alloc] init];
     self.contentView.backgroundColor = [UIColor clearColor];
     [self addSubview:self.contentView];
 
@@ -118,7 +118,7 @@
 - (void)sizeContent {
     [self.contentView sizeToFit];
 
-    CGRect bounds = self.contentView.frame;
+    CGRect bounds = self.contentView.animatedImage ? (CGRect) { .size = self.contentView.animatedImage.size } : self.contentView.frame;
 
     if (bounds.size.height) {
         CGFloat ratio = bounds.size.width / bounds.size.height;
@@ -180,13 +180,21 @@
     if (self.image) {
         [self showImage:self.image];
     }
+    else if (self.animatedImage) {
+        [self showAnimatedImage:self.animatedImage];
+    }
     else if (self.imagePath
              && [self.imagePath length]) {
 
-        UIImage *resultImage = [[[self class] imageControllerCache] objectForKey:self.imagePath];
+        id resultImage = [[[self class] imageControllerCache] objectForKey:self.imagePath];
 
-        if (resultImage) {
+        if (resultImage
+            && [resultImage isKindOfClass:[UIImage class]]) {
             [self showImage:resultImage];
+        }
+        else if (resultImage
+                 && [resultImage isKindOfClass:[FLAnimatedImage class]]) {
+            [self showAnimatedImage:resultImage];
         }
         else {
             self.progressIndicator.value = 0;
@@ -195,30 +203,41 @@
 
             __weak __typeof(self) weakSelf = self;
             AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
-            manager.responseSerializer = [AFImageResponseSerializer serializer];
+            manager.responseSerializer = [AFHTTPResponseSerializer serializer];
             [[manager GET:self.imagePath
                parameters:nil
                   success:^(AFHTTPRequestOperation *operation,
                             id responseObject) {
                       __strong __typeof(weakSelf) strongSelf = weakSelf;
 
-                      dispatch_async(dispatch_get_main_queue(), ^{
-                          if ([responseObject isKindOfClass:[UIImage class]]) {
+                      if ([responseObject isKindOfClass:[NSData class]]) {
 
-                              [[[strongSelf class] imageControllerCache] setObject:responseObject forKey:strongSelf.imagePath];
+                          FLAnimatedImage *animatedImage = [FLAnimatedImage animatedImageWithGIFData:responseObject];
 
-                              [strongSelf showImage:responseObject];
-                          }
-                          else if ([responseObject isKindOfClass:[NSData class]]) {
-                              UIImage *responseImage = [UIImage imageWithData:responseObject];
-                              [[[strongSelf class] imageControllerCache] setObject:responseImage forKey:strongSelf.imagePath];
+                          if (animatedImage) {
 
-                              [strongSelf showImage:responseImage];
+                              [[[self class] imageControllerCache] setObject:animatedImage forKey:strongSelf.imagePath];
+                              dispatch_async(dispatch_get_main_queue(), ^{
+                                  [strongSelf showAnimatedImage:animatedImage];
+                              });
                           }
                           else {
-                              [strongSelf showFailedImage];
+                              UIImage *image = [UIImage imageWithData:responseObject];
+
+                              if (image) {
+                                  [[[self class] imageControllerCache] setObject:image forKey:strongSelf.imagePath];
+                              }
+                              
+                              dispatch_async(dispatch_get_main_queue(), ^{
+                                  [strongSelf showImage:image];
+                              });
                           }
-                      });
+                      }
+                      else {
+                          dispatch_async(dispatch_get_main_queue(), ^{
+                              [strongSelf showFailedImage];
+                          });
+                      }
                   } failure:^(AFHTTPRequestOperation *operation,
                               NSError *error) {
                       dispatch_async(dispatch_get_main_queue(), ^{
@@ -245,7 +264,8 @@
 
 - (void)showImage:(UIImage*)image {
 
-    if (!image) {
+    if (!image
+        || ![image isKindOfClass:[UIImage class]]) {
         [self showFailedImage];
         return;
     }
@@ -255,6 +275,20 @@
     self.contentView.contentMode = UIViewContentModeScaleAspectFit;
     self.image = image;
     self.contentView.image = self.image;
+    [self sizeContent];
+}
+
+- (void)showAnimatedImage:(FLAnimatedImage*)image {
+    if (!image
+        || ![image isKindOfClass:[FLAnimatedImage class]]) {
+        [self showFailedImage];
+        return;
+    }
+
+    self.progressIndicator.hidden = YES;
+    self.contentView.contentMode = UIViewContentModeScaleAspectFit;
+    self.animatedImage = image;
+    self.contentView.animatedImage = image;
     [self sizeContent];
 }
 

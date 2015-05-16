@@ -12,6 +12,7 @@
 @interface NHImageScrollView : UIScrollView
 
 @property (nonatomic, strong) UIImage *image;
+@property (nonatomic, strong) FLAnimatedImage *animatedImage;
 @property (nonatomic, copy) NSString *imagePath;
 @property (nonatomic, readonly, assign) BOOL loadingImage;
 
