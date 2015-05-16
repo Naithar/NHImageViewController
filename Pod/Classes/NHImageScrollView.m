@@ -125,7 +125,7 @@
 
         if (ratio) {
 
-            if (ratio > 1.25) {
+            if (ratio > 1.5) {
                 if (self.frame.size.height > self.frame.size.width) {
                     bounds.size.width = MIN(self.bounds.size.width, self.bounds.size.height) - 2;
                     bounds.size.height = bounds.size.width / ratio;
@@ -135,7 +135,7 @@
                     bounds.size.height = bounds.size.width / ratio;
                 }
             }
-            else if (ratio < 0.75) {
+            else if (ratio < 0.5) {
                 if (self.frame.size.height > self.frame.size.width) {
                     bounds.size.height = MAX(self.bounds.size.width, self.bounds.size.height) - 2;
                     bounds.size.width = bounds.size.height * ratio;
@@ -215,7 +215,6 @@
                           FLAnimatedImage *animatedImage = [FLAnimatedImage animatedImageWithGIFData:responseObject];
 
                           if (animatedImage) {
-
                               [[[self class] imageControllerCache] setObject:animatedImage forKey:strongSelf.imagePath];
                               dispatch_async(dispatch_get_main_queue(), ^{
                                   [strongSelf showAnimatedImage:animatedImage];
@@ -227,7 +226,7 @@
                               if (image) {
                                   [[[self class] imageControllerCache] setObject:image forKey:strongSelf.imagePath];
                               }
-                              
+
                               dispatch_async(dispatch_get_main_queue(), ^{
                                   [strongSelf showImage:image];
                               });
