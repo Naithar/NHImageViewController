@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <FLAnimatedImage.h>
 
 @interface NHImageScrollView : UIScrollView
 
@@ -14,7 +15,7 @@
 @property (nonatomic, copy) NSString *imagePath;
 @property (nonatomic, readonly, assign) BOOL loadingImage;
 
-@property (nonatomic, readonly, strong) UIImageView *contentView;
+@property (nonatomic, readonly, strong) FLAnimatedImageView *contentView;
 
 - (instancetype)initWithFrame:(CGRect)frame;
 - (instancetype)initWithFrame:(CGRect)frame andImage:(UIImage*)image;

@@ -12,7 +12,7 @@
 
 @interface NHImageScrollView ()<UIScrollViewDelegate>
 
-@property (nonatomic, strong) UIImageView *contentView;
+@property (nonatomic, strong) FLAnimatedImageView *contentView;
 @property (nonatomic, strong) MACircleProgressIndicator *progressIndicator;
 @property (nonatomic, assign) BOOL loadingImage;
 @end
@@ -85,7 +85,7 @@
     self.showsHorizontalScrollIndicator = NO;
     self.backgroundColor = [UIColor clearColor];
 
-    self.contentView = [[UIImageView alloc] initWithFrame:CGRectZero];
+    self.contentView = [[FLAnimatedImageView alloc] initWithFrame:CGRectZero];
     self.contentView.backgroundColor = [UIColor clearColor];
     [self addSubview:self.contentView];
 
