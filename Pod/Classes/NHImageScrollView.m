@@ -10,6 +10,39 @@
 #import <MACircleProgressIndicator.h>
 #import <AFNetworking.h>
 
+typedef void(^NHSuccessBlock)(id);
+typedef void(^NHFailBlock)(void);
+typedef void(^NHDownloadBlock)(float);
+
+@interface NHImageOperationStore : NSObject
+
+@property (nonatomic, strong) AFHTTPRequestOperation *operation;
+@property (nonatomic, strong) NHSuccessBlock successBlock;
+@property (nonatomic, strong) NHFailBlock failBlock;
+@property (nonatomic, strong) NHDownloadBlock downloadBlock;
+
+@end
+
+@implementation NHImageOperationStore
+
+- (instancetype)initWithOperation:(AFHTTPRequestOperation*)operation
+                    succeessBlock:(NHSuccessBlock)successBlock
+                        failBlock:(NHFailBlock)failBlock
+                    downloadBlock:(NHDownloadBlock)downloadBlock {
+    self = [super init];
+
+    if (self) {
+        _operation = operation;
+        _successBlock = successBlock;
+        _failBlock = failBlock;
+        _downloadBlock = downloadBlock;
+    }
+
+    return self;
+}
+
+@end
+
 @interface NHImageScrollView ()<UIScrollViewDelegate>
 
 @property (nonatomic, strong) FLAnimatedImageView *contentView;
@@ -18,6 +51,16 @@
 @end
 
 @implementation NHImageScrollView
+
++ (NSMutableDictionary*)operationStorage {
+    static dispatch_once_t token;
+    __strong static NSMutableDictionary* instance = nil;
+    dispatch_once(&token, ^{
+        instance = [[NSMutableDictionary alloc] init];
+    });
+
+    return instance;
+}
 
 + (NSCache*)imageControllerCache {
     static dispatch_once_t token;
@@ -208,65 +251,139 @@
             self.progressIndicator.hidden = NO;
             self.loadingImage = YES;
 
+            NHImageOperationStore *operationData = [[[self class] operationStorage] objectForKey:self.imagePath];
+
+            AFHTTPRequestOperation *operation = nil;
+            NHSuccessBlock previousSuccessBlock = nil;
+            NHFailBlock previousFailBlock = nil;
+            NHDownloadBlock previousDownloadBlock = nil;
+
+            if (operationData) {
+                operation = operationData.operation;
+                previousSuccessBlock = operationData.successBlock;
+                previousFailBlock = operationData.failBlock;
+                previousDownloadBlock = operationData.downloadBlock;
+            }
+
             __weak __typeof(self) weakSelf = self;
-            AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
-            manager.responseSerializer = [AFHTTPResponseSerializer serializer];
-            [[manager GET:self.imagePath
-               parameters:nil
-                  success:^(AFHTTPRequestOperation *operation,
-                            id responseObject) {
-                      __strong __typeof(weakSelf) strongSelf = weakSelf;
+            NHSuccessBlock successBlock = ^(id responseObject){
+                __strong __typeof(weakSelf) strongSelf = weakSelf;
 
-                      if ([responseObject isKindOfClass:[NSData class]]) {
+                if (previousSuccessBlock) {
+                    previousSuccessBlock(responseObject);
+                }
+                [strongSelf processResponse:responseObject];
+            };
+            NHFailBlock failBlock = ^{
+                __strong __typeof(weakSelf) strongSelf = weakSelf;
 
-                          FLAnimatedImage *animatedImage = [FLAnimatedImage animatedImageWithGIFData:responseObject];
+                if (previousFailBlock) {
+                    previousFailBlock();
+                }
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [strongSelf showFailedImage];
+                });
+            };
+            NHDownloadBlock downloadBlock = ^(float value){
+                __strong __typeof(weakSelf) strongSelf = weakSelf;
 
-                          if (animatedImage) {
+                if (previousDownloadBlock) {
+                    previousDownloadBlock(value);
+                }
+                strongSelf.progressIndicator.value = value;
+            };
 
-                              [[[strongSelf class] imageControllerCache] setObject:animatedImage forKey:strongSelf.imagePath];
-                              dispatch_async(dispatch_get_main_queue(), ^{
-                                  [strongSelf showAnimatedImage:animatedImage];
-                              });
-                          }
-                          else {
-                              UIImage *image = [UIImage imageWithData:responseObject];
+            if (!operation
+                || operation.isFinished) {
+                AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
+                manager.responseSerializer = [AFHTTPResponseSerializer serializer];
+                operation = [manager
+                             GET:self.imagePath
+                             parameters:nil
+                             success:^(AFHTTPRequestOperation *operation,
+                                       id responseObject) {
+                                 __strong __typeof(weakSelf) strongSelf = weakSelf;
+                                 [[[strongSelf class] operationStorage] removeObjectForKey:strongSelf.imagePath];
+                                 successBlock(responseObject);
+                             } failure:^(AFHTTPRequestOperation *operation,
+                                         NSError *error) {
+                                 __strong __typeof(weakSelf) strongSelf = weakSelf;
+                                 [[[strongSelf class] operationStorage] removeObjectForKey:strongSelf.imagePath];
+                                 failBlock();
+                             }];
+            }
+            else {
+                [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation,
+                                                           id responseObject) {
+                    __strong __typeof(weakSelf) strongSelf = weakSelf;
+                    [[[strongSelf class] operationStorage] removeObjectForKey:strongSelf.imagePath];
+                    successBlock(responseObject);
+                } failure:^(AFHTTPRequestOperation *operation,
+                            NSError *error) {
+                    __strong __typeof(weakSelf) strongSelf = weakSelf;
+                    [[[strongSelf class] operationStorage] removeObjectForKey:strongSelf.imagePath];
+                    failBlock();
+                }];
+            }
 
-                              if (image) {
-                                  [[[strongSelf class] imageControllerCache] setObject:image forKey:strongSelf.imagePath];
-                              }
+            [operation setDownloadProgressBlock:^(NSUInteger bytesRead,
+                                                  long long totalBytesRead,
+                                                  long long totalBytesExpectedToRead) {
+                CGFloat value = 0;
 
-                              dispatch_async(dispatch_get_main_queue(), ^{
-                                  [strongSelf showImage:image];
-                              });
-                          }
-                      }
-                      else {
-                          dispatch_async(dispatch_get_main_queue(), ^{
-                              [strongSelf showFailedImage];
-                          });
-                      }
-                  } failure:^(AFHTTPRequestOperation *operation,
-                              NSError *error) {
-                      dispatch_async(dispatch_get_main_queue(), ^{
-                          __strong __typeof(weakSelf) strongSelf = weakSelf;
-                          [strongSelf showFailedImage];
-                      });
-                  }] setDownloadProgressBlock:^(NSUInteger bytesRead,
-                                                long long totalBytesRead,
-                                                long long totalBytesExpectedToRead) {
-                      __strong __typeof(weakSelf) strongSelf = weakSelf;
-                      CGFloat value = 0;
+                if (totalBytesExpectedToRead) {
+                    value = (double)totalBytesRead / (double)totalBytesExpectedToRead;
+                }
 
-                      if (totalBytesExpectedToRead) {
-                          value = (double)totalBytesRead / (double)totalBytesExpectedToRead;
-                      }
+                downloadBlock(value);
+            }];
 
-                      strongSelf.progressIndicator.value = value;
-                  }];
+            [[[self class] operationStorage]
+             setObject:[[NHImageOperationStore alloc] initWithOperation:operation
+                                                          succeessBlock:successBlock
+                                                              failBlock:failBlock
+                                                          downloadBlock:downloadBlock]
+             forKey:self.imagePath];
         }
     }
     else {
         [self showFailedImage];
+    }
+}
+
+- (void)processResponse:(id)responseObject {
+    __weak __typeof(self) weakSelf = self;
+
+    if ([responseObject isKindOfClass:[NSData class]]) {
+
+        FLAnimatedImage *animatedImage = [FLAnimatedImage animatedImageWithGIFData:responseObject];
+
+        if (animatedImage) {
+
+            [[[self class] imageControllerCache] setObject:animatedImage forKey:self.imagePath];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                __strong __typeof(weakSelf) strongSelf = weakSelf;
+                [strongSelf showAnimatedImage:animatedImage];
+            });
+        }
+        else {
+            UIImage *image = [UIImage imageWithData:responseObject];
+
+            if (image) {
+                [[[self class] imageControllerCache] setObject:image forKey:self.imagePath];
+            }
+
+            dispatch_async(dispatch_get_main_queue(), ^{
+                __strong __typeof(weakSelf) strongSelf = weakSelf;
+                [strongSelf showImage:image];
+            });
+        }
+    }
+    else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            [strongSelf showFailedImage];
+        });
     }
 }
 
@@ -345,5 +462,7 @@
     return self.contentView;
 }
 
+- (void)dealloc {
+}
 
 @end
