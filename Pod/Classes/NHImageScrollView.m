@@ -167,10 +167,17 @@
     [self scrollViewDidZoom:self];
 }
 
-- (void)saveImage {
+- (BOOL)saveImage {
     if (self.image) {
         UIImageWriteToSavedPhotosAlbum(self.image, nil, nil, nil);
+        return YES;
     }
+    else if (self.animatedImage) {
+        UIImageWriteToSavedPhotosAlbum(self.animatedImage.posterImage, nil, nil, nil);
+        return YES;
+    }
+
+    return NO;
 }
 
 - (void)loadImage {

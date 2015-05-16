@@ -24,7 +24,7 @@
 - (instancetype)initWithFrame:(CGRect)frame image:(UIImage*)image andPath:(NSString*)path;
 
 - (void)loadImage;
-- (void)saveImage;
+- (BOOL)saveImage;
 - (void)sizeContent;
 - (void)zoomToPoint:(CGPoint)point andScale:(CGFloat)scale;
 @end

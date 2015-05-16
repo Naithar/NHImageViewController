@@ -248,10 +248,10 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 
 }
 
-- (void)saveCurrentPageImage {
+- (BOOL)saveCurrentPageImage {
     NHImageScrollView *currentPage = ((NHImageScrollView*)[[self contentView] subviews][self.currentPage]);
 
-    [currentPage saveImage];
+    return [currentPage saveImage];
 }
 
 - (void)reloadCurrentPageImage {

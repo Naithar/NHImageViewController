@@ -30,7 +30,7 @@ extern NSString *const kNHImageViewTextFontAttributeName;
 - (BOOL)hideInterface;
 - (BOOL)displayInterface;
 
-- (void)saveCurrentPageImage;
+- (BOOL)saveCurrentPageImage;
 - (void)reloadCurrentPageImage;
 - (BOOL)canCopyLink;
 - (void)copyLink;
