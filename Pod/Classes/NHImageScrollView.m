@@ -14,7 +14,7 @@ typedef void(^NHSuccessBlock)(id);
 typedef void(^NHFailBlock)(void);
 typedef void(^NHDownloadBlock)(float);
 
-@interface NHImageOperationStore : NSObject
+@interface NHImageOperationItem : NSObject
 
 @property (nonatomic, strong) AFHTTPRequestOperation *operation;
 @property (nonatomic, strong) NHSuccessBlock successBlock;
@@ -23,7 +23,7 @@ typedef void(^NHDownloadBlock)(float);
 
 @end
 
-@implementation NHImageOperationStore
+@implementation NHImageOperationItem
 
 - (instancetype)initWithOperation:(AFHTTPRequestOperation*)operation
                     succeessBlock:(NHSuccessBlock)successBlock
@@ -251,7 +251,7 @@ typedef void(^NHDownloadBlock)(float);
             self.progressIndicator.hidden = NO;
             self.loadingImage = YES;
 
-            NHImageOperationStore *operationData = [[[self class] operationStorage] objectForKey:self.imagePath];
+            NHImageOperationItem *operationData = [[[self class] operationStorage] objectForKey:self.imagePath];
 
             AFHTTPRequestOperation *operation = nil;
             NHSuccessBlock previousSuccessBlock = nil;
@@ -339,7 +339,7 @@ typedef void(^NHDownloadBlock)(float);
             }];
 
             [[[self class] operationStorage]
-             setObject:[[NHImageOperationStore alloc] initWithOperation:operation
+             setObject:[[NHImageOperationItem alloc] initWithOperation:operation
                                                           succeessBlock:successBlock
                                                               failBlock:failBlock
                                                           downloadBlock:downloadBlock]
