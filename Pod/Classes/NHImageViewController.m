@@ -267,7 +267,8 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     id imageData = self.imagesArray[self.currentPage];
 
     return [imageData isKindOfClass:[NSString class]]
-    || [imageData isKindOfClass:[NSURL class]];
+    || [imageData isKindOfClass:[NSURL class]]
+    || [imageData isKindOfClass:[NHImageData class]];
 }
 
 - (void)copyLink {
@@ -283,6 +284,9 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     }
     else if ([imageData isKindOfClass:[NSURL class]]) {
         imageLink = ((NSURL*)imageData).absoluteString;
+    }
+    else if ([imageData isKindOfClass:[NHImageData class]]) {
+        imageLink = ((NHImageData*)imageData).path;
     }
 
     [[UIPasteboard generalPasteboard] setString:imageLink];
