@@ -164,6 +164,10 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
         else if ([obj isKindOfClass:[NSURL class]]) {
             pageImagePath = ((NSURL*)obj).absoluteString;
         }
+        else if ([obj isKindOfClass:[NHImageData class]]) {
+            pageImage = ((NHImageData*)obj).image;
+            pageImagePath = ((NHImageData*)obj).path;
+        }
 
         NHImageScrollView *scrollView = [[NHImageScrollView alloc]
                                          initWithFrame:CGRectMake(self.pageSpacing * (idx + 1)

@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "NHImageData.h"
 
 extern NSString *const kNHImageViewBackgroundColorAttributeName;
 extern NSString *const kNHImageViewTextColorAttributeName;
