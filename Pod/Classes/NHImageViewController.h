@@ -13,12 +13,19 @@ extern NSString *const kNHImageViewBackgroundColorAttributeName;
 extern NSString *const kNHImageViewTextColorAttributeName;
 extern NSString *const kNHImageViewTextFontAttributeName;
 
+
+@interface NHImageViewLabel : UILabel
+
+@property (nonatomic, assign) UIEdgeInsets textInsets;
+
+@end
+
 @interface NHImageViewController : UIViewController
 
 @property (strong, readonly, nonatomic) UIButton *closeButton;
 @property (strong, readonly, nonatomic) UIButton *optionsButton;
 
-@property (strong, readonly, nonatomic) UILabel *noteLabel;
+@property (strong, readonly, nonatomic) NHImageViewLabel *noteLabel;
 
 @property (nonatomic, strong) UIColor *backgroundColor;
 @property (nonatomic, strong) UIColor *textColor;

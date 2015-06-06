@@ -16,6 +16,14 @@ NSString *const kNHImageViewBackgroundColorAttributeName = @"NHImageViewBackgrou
 NSString *const kNHImageViewTextColorAttributeName = @"NHImageViewTextColorAttribute";
 NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribute";
 
+@implementation NHImageViewLabel : UILabel
+
+- (void)drawTextInRect:(CGRect)rect {
+    [super drawTextInRect:UIEdgeInsetsInsetRect(rect, self.textInsets)];
+}
+
+@end
+
 @interface NHImageViewController ()<UIScrollViewDelegate, UIGestureRecognizerDelegate>
 
 @property (nonatomic, assign) UIModalPresentationStyle parentPresentationStyle;
@@ -35,7 +43,7 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 @property (strong, nonatomic) UIButton *closeButton;
 @property (strong, nonatomic) UIButton *optionsButton;
 
-@property (strong, nonatomic) UILabel *noteLabel;
+@property (strong, nonatomic) NHImageViewLabel *noteLabel;
 
 @property (nonatomic, assign) CGFloat pageSpacing;
 
@@ -214,7 +222,7 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     self.optionsButton.tintColor = [UIColor whiteColor];
     [self.view addSubview:self.optionsButton];
 
-    self.noteLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height - 64, self.view.bounds.size.width, 64)];
+    self.noteLabel = [[NHImageViewLabel alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height - 64, self.view.bounds.size.width, 64)];
     self.noteLabel.textAlignment = NSTextAlignmentCenter;
     self.noteLabel.text = [self.note isKindOfClass:[NSNull class]] ? nil : self.note;
     self.noteLabel.lineBreakMode = NSLineBreakByTruncatingTail;
