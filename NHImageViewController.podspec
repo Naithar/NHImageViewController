@@ -9,7 +9,7 @@
 
 Pod::Spec.new do |s|
   s.name             = "NHImageViewController"
-  s.version          = "0.1.0"
+  s.version          = "0.5.0"
   s.summary          = "Custom image viewer controller"
 #  s.description      = <<-DESC
 #                       An optional longer description of NHImageViewController

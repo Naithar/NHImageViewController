@@ -10,6 +10,11 @@
 #import <MACircleProgressIndicator.h>
 #import <AFNetworking.h>
 
+#define image(name) \
+[[UIImage alloc] initWithContentsOfFile: \
+[[NSBundle bundleForClass:[NHImageScrollView class]]\
+pathForResource:name ofType:@"png"]]
+
 typedef void(^NHSuccessBlock)(id);
 typedef void(^NHFailBlock)(void);
 typedef void(^NHDownloadBlock)(float);
@@ -422,7 +427,7 @@ typedef void(^NHDownloadBlock)(float);
     self.image = nil;
     self.progressIndicator.hidden = YES;
     self.contentView.contentMode = UIViewContentModeCenter;
-    self.contentView.image = [UIImage imageNamed:@"NHImageView.none.png"];
+    self.contentView.image = image(@"NHImageView.none");//UIImage imageNamed:@"NHImageView.none.png"];
     [self sizeContent];
 }
 

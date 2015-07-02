@@ -9,6 +9,11 @@
 #import "NHImageViewController.h"
 #import "NHImageScrollView.h"
 
+#define image(name) \
+[[UIImage alloc] initWithContentsOfFile: \
+[[NSBundle bundleForClass:[NHImageScrollView class]]\
+pathForResource:name ofType:@"png"]]
+
 #define ifNSNull(x, y) \
 ([x isKindOfClass:[NSNull class]]) ? y : (x ?: y)
 
@@ -208,7 +213,7 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     self.closeButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 64, 80)];
     self.closeButton.backgroundColor = [UIColor clearColor];
     [self.closeButton setTitle:nil forState:UIControlStateNormal];
-    [self.closeButton setImage:[[UIImage imageNamed:@"NHImageView.close.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
+    [self.closeButton setImage:[image(@"NHImageView.close") imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
     [self.closeButton addTarget:self action:@selector(closeButtonAction:) forControlEvents:UIControlEventTouchUpInside];
     self.closeButton.tintColor = [UIColor whiteColor];
     [self.view addSubview:self.closeButton];
@@ -217,7 +222,7 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     self.optionsButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.bounds.size.width - 64, 0, 64, 80)];
     self.optionsButton.backgroundColor = [UIColor clearColor];
     [self.optionsButton setTitle:nil forState:UIControlStateNormal];
-    [self.optionsButton setImage:[[UIImage imageNamed:@"NHImageView.more.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
+    [self.optionsButton setImage:[image(@"NHImageView.more") imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
     [self.optionsButton addTarget:self action:@selector(optionsButtonAction:) forControlEvents:UIControlEventTouchUpInside];
     self.optionsButton.tintColor = [UIColor whiteColor];
     [self.view addSubview:self.optionsButton];
