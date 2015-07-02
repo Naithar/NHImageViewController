@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <FLAnimatedImage.h>
+#import <FLAnimatedImage/FLAnimatedImage.h>
 
 @interface NHImageScrollView : UIScrollView
 

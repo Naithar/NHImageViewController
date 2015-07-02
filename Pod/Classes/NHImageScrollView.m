@@ -7,8 +7,8 @@
 //
 
 #import "NHImageScrollView.h"
-#import <MACircleProgressIndicator.h>
-#import <AFNetworking.h>
+#import <MACircleProgressIndicator/MACircleProgressIndicator.h>
+#import <AFNetworking/AFNetworking.h>
 
 #define image(name) \
 [[UIImage alloc] initWithContentsOfFile: \
