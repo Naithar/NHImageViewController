@@ -29,7 +29,7 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 
 @end
 
-@interface NHImageViewController ()<UIScrollViewDelegate, UIGestureRecognizerDelegate>
+@interface NHImageViewController ()<UIScrollViewDelegate, UIGestureRecognizerDelegate, UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning>
 
 @property (nonatomic, assign) UIModalPresentationStyle parentPresentationStyle;
 
@@ -56,6 +56,7 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 
 @property (nonatomic, strong) UITapGestureRecognizer *tapGesture;
 @property (nonatomic, strong) UITapGestureRecognizer *doubleTapGesture;
+
 @end
 
 @implementation NHImageViewController
@@ -70,7 +71,7 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
                       kNHImageViewTextFontAttributeName : [UIFont systemFontOfSize:15]
                       } mutableCopy];
     });
-
+    
     return settings;
 }
 
@@ -86,25 +87,26 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 
 - (id)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
-
+    
     if (self) {
         [self commonInit];
     }
-
+    
     return self;
 }
 
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-
+    
     if (self) {
         [self commonInit];
     }
-
+    
     return self;
 }
 
 - (void)commonInit {
+    self.transitioningDelegate = self;
     _backgroundColor = ifNSNull([[self class] defaultSettings][kNHImageViewBackgroundColorAttributeName], nil);
     _textColor = ifNSNull([[self class] defaultSettings][kNHImageViewTextColorAttributeName], nil);
     _textFont = ifNSNull([[self class] defaultSettings][kNHImageViewTextFontAttributeName], nil);
@@ -113,10 +115,10 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 - (void)setBackgroundColor:(UIColor *)backgroundColor {
     [self willChangeValueForKey:@"backgroundColor"];
     _backgroundColor = backgroundColor;
-
+    
     self.view.backgroundColor = self.backgroundColor ?: [UIColor blackColor];
     self.noteLabel.backgroundColor = [(self.backgroundColor ?: [UIColor blackColor]) colorWithAlphaComponent:0.5];
-
+    
     [self didChangeValueForKey:@"backgroundColor"];
 }
 
@@ -135,18 +137,18 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 }
 
 - (void)viewDidLoad {
-
+    
     [super viewDidLoad];
-
+    
     _interfaceHidden = NO;
     self.view.backgroundColor = self.backgroundColor ?: [UIColor blackColor];
-
+    
     self.pages = self.imagesArray.count;
-
+    
     if (self.pageSpacing == 0) {
         self.pageSpacing = 5;
     }
-
+    
     self.pageScrollView = [[UIScrollView alloc] initWithFrame:UIEdgeInsetsInsetRect(self.view.bounds, UIEdgeInsetsMake(0, -self.pageSpacing, 0, -self.pageSpacing))];
     self.pageScrollView.backgroundColor = [UIColor clearColor];
     self.pageScrollView.pagingEnabled = YES;
@@ -154,20 +156,20 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     self.pageScrollView.delegate = self;
     self.pageScrollView.showsHorizontalScrollIndicator = NO;
     self.pageScrollView.showsVerticalScrollIndicator = NO;
-
+    
     [self.view addSubview:self.pageScrollView];
-
+    
     self.contentView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.pages * self.pageScrollView.bounds.size.width, self.view.bounds.size.height)];
-
+    
     self.contentView.backgroundColor = [UIColor clearColor];
-
+    
     [self.pageScrollView addSubview:self.contentView];
-
+    
     [self.imagesArray enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-
+        
         UIImage *pageImage;
         NSString *pageImagePath;
-
+        
         if ([obj isKindOfClass:[UIImage class]]) {
             pageImage = obj;
         }
@@ -181,7 +183,7 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
             pageImage = ((NHImageData*)obj).image;
             pageImagePath = ((NHImageData*)obj).path;
         }
-
+        
         NHImageScrollView *scrollView = [[NHImageScrollView alloc]
                                          initWithFrame:CGRectMake(self.pageSpacing * (idx + 1)
                                                                   + (self.view.bounds.size.width
@@ -191,25 +193,25 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
                                                                   self.view.bounds.size.height)
                                          image:pageImage
                                          andPath:pageImagePath];
-
+        
         [self.contentView addSubview:scrollView];
     }];
-
-
+    
+    
     self.panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGestureAction:)];
     self.panGesture.delegate = self;
     [self.pageScrollView addGestureRecognizer:self.panGesture];
-
+    
     self.doubleTapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(doubleTapGestureAction:)];
     self.doubleTapGesture.numberOfTapsRequired = 2;
     [self.pageScrollView addGestureRecognizer:self.doubleTapGesture];
-
+    
     self.tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapGestureAction:)];
     self.tapGesture.numberOfTapsRequired = 1;
     [self.tapGesture requireGestureRecognizerToFail:self.doubleTapGesture];
     [self.tapGesture requireGestureRecognizerToFail:self.panGesture];
     [self.pageScrollView addGestureRecognizer:self.tapGesture];
-
+    
     self.closeButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 64, 80)];
     self.closeButton.backgroundColor = [UIColor clearColor];
     [self.closeButton setTitle:nil forState:UIControlStateNormal];
@@ -217,8 +219,8 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     [self.closeButton addTarget:self action:@selector(closeButtonAction:) forControlEvents:UIControlEventTouchUpInside];
     self.closeButton.tintColor = [UIColor whiteColor];
     [self.view addSubview:self.closeButton];
-
-
+    
+    
     self.optionsButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.bounds.size.width - 64, 0, 64, 80)];
     self.optionsButton.backgroundColor = [UIColor clearColor];
     [self.optionsButton setTitle:nil forState:UIControlStateNormal];
@@ -226,7 +228,7 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     [self.optionsButton addTarget:self action:@selector(optionsButtonAction:) forControlEvents:UIControlEventTouchUpInside];
     self.optionsButton.tintColor = [UIColor whiteColor];
     [self.view addSubview:self.optionsButton];
-
+    
     self.noteLabel = [[NHImageViewLabel alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height - 64, self.view.bounds.size.width, 64)];
     self.noteLabel.textAlignment = NSTextAlignmentCenter;
     self.noteLabel.text = [self.note isKindOfClass:[NSNull class]] ? nil : self.note;
@@ -238,7 +240,7 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     self.noteLabel.hidden = self.note == nil
     || [self.note isKindOfClass:[NSNull class]]
     || [self.note length] == 0;
-
+    
     [self.view addSubview:self.noteLabel];
 }
 
@@ -247,27 +249,27 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 }
 
 - (void)optionsButtonAction:(UIButton*)button {
-
+    
 }
 
 - (void)doubleTapGestureAction:(UITapGestureRecognizer*)recognizer {
-
+    
     NHImageScrollView *currentPage = ((NHImageScrollView*)[[self contentView] subviews][self.currentPage]);
-
+    
     if (currentPage.zoomScale > 1.5) {
         [currentPage setZoomScale:1 animated:YES];
     }
     else {
         CGPoint location = [recognizer locationInView:currentPage.contentView];
-
+        
         [currentPage zoomToPoint:location andScale:5];
     }
-
+    
 }
 
 - (BOOL)saveCurrentPageImage {
     NHImageScrollView *currentPage = ((NHImageScrollView*)[[self contentView] subviews][self.currentPage]);
-
+    
     return [currentPage saveImage];
 }
 
@@ -278,7 +280,7 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 
 - (BOOL)canCopyLink {
     id imageData = self.imagesArray[self.currentPage];
-
+    
     return [imageData isKindOfClass:[NSString class]]
     || [imageData isKindOfClass:[NSURL class]]
     || [imageData isKindOfClass:[NHImageData class]];
@@ -288,10 +290,10 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     if (![self canCopyLink]) {
         return;
     }
-
+    
     id imageData = self.imagesArray[self.currentPage];
     NSString *imageLink;
-
+    
     if ([imageData isKindOfClass:[NSString class]]) {
         imageLink = imageData;
     }
@@ -301,7 +303,7 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     else if ([imageData isKindOfClass:[NHImageData class]]) {
         imageLink = ((NHImageData*)imageData).path;
     }
-
+    
     [[UIPasteboard generalPasteboard] setString:imageLink];
 }
 
@@ -318,23 +320,23 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     if (self.interfaceHidden) {
         return NO;
     }
-
+    
     self.interfaceHidden = YES;
     CGRect closeButtonFrame = self.closeButton.frame;
     closeButtonFrame.origin.y = -closeButtonFrame.size.height;
-
+    
     CGRect menuButtonFrame = self.optionsButton.frame;
     menuButtonFrame.origin.y = -menuButtonFrame.size.height;
-
+    
     CGRect noteLabelFrame = self.noteLabel.frame;
     noteLabelFrame.origin.y = self.view.frame.size.height;
-
+    
     [UIView animateWithDuration:0.2 animations:^{
         self.closeButton.frame = closeButtonFrame;
         self.optionsButton.frame = menuButtonFrame;
         self.noteLabel.frame = noteLabelFrame;
     }];
-
+    
     return YES;
 }
 
@@ -342,30 +344,30 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     if (!self.interfaceHidden) {
         return NO;
     }
-
+    
     self.interfaceHidden = NO;
     CGRect closeButtonFrame = CGRectMake(0, 0, 64, 80);
-
+    
     CGRect menuButtonFrame = CGRectMake(self.view.bounds.size.width - 64, 0, 64, 80);
-
+    
     CGRect noteLabelFrame = CGRectMake(0, self.view.bounds.size.height - 64, self.view.bounds.size.width, 64);
-
+    
     [UIView animateWithDuration:0.2 animations:^{
         self.closeButton.frame = closeButtonFrame;
         self.optionsButton.frame = menuButtonFrame;
         self.noteLabel.frame = noteLabelFrame;
     }];
-
+    
     return YES;
 }
 
 - (void)panGestureAction:(UIPanGestureRecognizer*)panGesture {
-
+    
     if (((NHImageScrollView*)[[self contentView] subviews][self.currentPage]).zoomScale > 1) {
         self.panGestureStartPoint = CGPointZero;
         return;
     }
-
+    
     CGPoint translation = [panGesture translationInView:self.pageScrollView];
     //
     if (ABS(translation.x) >= ABS(translation.y)
@@ -379,33 +381,33 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
         self.panGestureStartPoint = CGPointZero;
         return;
     }
-
+    
     CGPoint velocity = [panGesture velocityInView:self.pageScrollView];
-
+    
     switch (panGesture.state) {
         case UIGestureRecognizerStateBegan:
             self.panGestureStartPoint = self.pageScrollView.center;
         case UIGestureRecognizerStateChanged: {
-
+            
             [self hideInterface];
-
+            
             self.pageScrollView.panGestureRecognizer.enabled = NO;
             self.pageScrollView.pinchGestureRecognizer.enabled = NO;
-
+            
             self.pageScrollView.center = CGPointMake(self.panGestureStartPoint.x, self.panGestureStartPoint.y + translation.y);
-
+            
             CGFloat value = ABS(self.view.bounds.size.height / 2.0 - self.pageScrollView.center.y) / (self.view.bounds.size.height / 2.0) / 3.0;
-
-
+            
+            
             self.view.backgroundColor = [self.view.backgroundColor colorWithAlphaComponent:1 - value];
         } break;
         case UIGestureRecognizerStateEnded:
         case UIGestureRecognizerStateFailed:
         case UIGestureRecognizerStateCancelled:
-
+            
             self.pageScrollView.panGestureRecognizer.enabled = YES;
             self.pageScrollView.pinchGestureRecognizer.enabled = YES;
-
+            
             if (ABS(velocity.y) > 800) {
                 [UIView animateWithDuration:0.3
                                       delay:0
@@ -416,8 +418,8 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
                                  } completion:^(BOOL finished) {
                                      [self dismissViewControllerAnimated:YES completion:nil];
                                  }];
-
-
+                
+                
             }
             else {
                 if (self.pageScrollView.center.y < 0) {
@@ -452,7 +454,7 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
                                      } completion:^(BOOL finished) {
                                          [self displayInterface];
                                      }];
-
+                    
                     self.panGestureStartPoint = CGPointZero;
                 }
             }
@@ -485,27 +487,27 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
-
+    
     NSInteger page = self.currentPage;
-
+    
     self.pageScrollView.frame = UIEdgeInsetsInsetRect(self.view.bounds, UIEdgeInsetsMake(0, -self.pageSpacing, 0, -self.pageSpacing));
     self.contentView.frame = CGRectMake(0, 0, self.pages * self.pageScrollView.frame.size.width, self.pageScrollView.frame.size.height);
     self.pageScrollView.contentSize = self.contentView.bounds.size;
-
+    
     [self.pageScrollView setNeedsDisplay];
-
+    
     self.closeButton.frame = CGRectMake(0, 0, 64, 80);
     self.optionsButton.frame = CGRectMake(self.view.bounds.size.width - 64, 0, 64, 80);
     self.noteLabel.frame = CGRectMake(0, self.view.bounds.size.height - 64, self.view.bounds.size.width, 64);
     self.pageScrollView.contentOffset = CGPointMake(page * self.pageScrollView.frame.size.width, 0);
-
-
+    
+    
     [self.contentView.subviews enumerateObjectsUsingBlock:^(NHImageScrollView *obj, NSUInteger idx, BOOL *stop) {
         [obj setZoomScale:1];
         obj.frame = CGRectMake(self.pageSpacing * (idx + 1) + (self.view.bounds.size.width + self.pageSpacing) * idx, 0, self.view.bounds.size.width, self.view.bounds.size.height);
         [obj sizeContent];
     }];
-
+    
     [self.view layoutSubviews];
     [self.view layoutIfNeeded];
     [self.view setNeedsDisplay];
@@ -513,24 +515,24 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     NSInteger page = round((scrollView.contentOffset.x) / scrollView.bounds.size.width);
-
+    
     if (self.currentPage != page
         && page >= 0
         && page < self.pages) {
         NHImageScrollView *previousPage = (NHImageScrollView*)self.contentView.subviews[self.currentPage];
-
+        
         [previousPage setZoomScale:1 animated:YES];
         [previousPage sizeContent];
-
+        
         self.currentPage = page;
-
+        
         NHImageScrollView *currentPage = (NHImageScrollView*)self.contentView.subviews[self.currentPage];
-
+        
         if (!currentPage.image
             && !currentPage.loadingImage) {
             [currentPage loadImage];
         }
-
+        
         [currentPage sizeContent];
     }
 }
@@ -539,18 +541,18 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     [super didReceiveMemoryWarning];
 }
 
-- (void)dismissViewControllerAnimated:(BOOL)flag completion:(void (^)(void))completion {
-
-    UIViewController *presentingViewController = self.presentingViewController;
-
-    [super dismissViewControllerAnimated:flag completion:^{
-        if (completion) {
-            completion();
-        }
-
-        presentingViewController.modalPresentationStyle = self.parentPresentationStyle;
-    }];
-}
+//- (void)dismissViewControllerAnimated:(BOOL)flag completion:(void (^)(void))completion {
+//
+//    UIViewController *presentingViewController = self.presentingViewController;
+//
+//    [super dismissViewControllerAnimated:flag completion:^{
+//        if (completion) {
+//            completion();
+//        }
+//
+//        presentingViewController.modalPresentationStyle = self.parentPresentationStyle;
+//    }];
+//}
 
 + (instancetype)showImage:(UIImage*)image inViewController:(UIViewController*)controller {
     return [self showImage:image withNote:nil inViewController:controller];
@@ -584,13 +586,13 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     if (dataArray.count == 0) {
         return nil;
     }
-
+    
     NHImageViewController *imageViewController = [[[self class] alloc] init];
     imageViewController.imagesArray = dataArray;
     imageViewController.parentPresentationStyle = controller.modalPresentationStyle;
-    controller.modalPresentationStyle = UIModalPresentationCurrentContext;
+    //    controller.modalPresentationStyle = UIModalPresentationCurrentContext;
     imageViewController.modalPresentationStyle = UIModalPresentationCustom;
-    imageViewController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
+    //    imageViewController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
     imageViewController.note = note;
     
     [[controller tabBarController] ?: controller presentViewController:imageViewController animated:YES completion:nil];
@@ -601,5 +603,58 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 - (void)setStartingPage:(NSInteger)startPage {
     self.currentPage = startPage;
 }
+
+- (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
+                                                                  presentingController:(UIViewController *)presenting
+                                                                      sourceController:(UIViewController *)source {
+    return self;
+}
+
+- (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed {
+    return self;
+}
+
+- (NSTimeInterval)transitionDuration:(id<UIViewControllerContextTransitioning>)transitionContext {
+    return 0.3;
+}
+
+- (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext {
+    UIViewController *fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
+    UIViewController *toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
+    
+    UIView *containerView = [transitionContext containerView];
+    
+    if (fromViewController == self) {
+        [UIView animateWithDuration:0.3
+                              delay:0
+                            options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionCurveEaseOut
+                         animations:^{
+                             fromViewController.view.alpha = 0;
+                             toViewController.view.layer.transform = CATransform3DIdentity;
+                         } completion:^(BOOL finished) {
+                             [fromViewController.view removeFromSuperview];
+                             [transitionContext completeTransition:YES];
+                         }];
+    }
+    else {
+        CGRect finalFrame = [transitionContext finalFrameForViewController:toViewController];
+        toViewController.view.frame = finalFrame;
+        [containerView addSubview:toViewController.view];
+        [containerView bringSubviewToFront:toViewController.view];
+        toViewController.view.alpha = 0;
+        
+        [UIView animateWithDuration:0.3
+                              delay:0
+                            options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionCurveEaseOut
+                         animations:^{
+                             toViewController.view.alpha = 1;
+                             fromViewController.view.layer.transform = CATransform3DMakeScale(0.9, 0.9, 1);
+                         } completion:^(BOOL finished) {
+                             [transitionContext completeTransition:YES];
+                         }];
+        
+    }
+}
+
 
 @end
