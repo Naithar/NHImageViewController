@@ -641,15 +641,18 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
         toViewController.view.frame = finalFrame;
         [containerView addSubview:toViewController.view];
         [containerView bringSubviewToFront:toViewController.view];
-        toViewController.view.alpha = 0;
+        toViewController.view.alpha = 0.25;
+        fromViewController.view.alpha = 0.75;
         
         [UIView animateWithDuration:0.3
                               delay:0
                             options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionCurveEaseOut
                          animations:^{
                              toViewController.view.alpha = 1;
+                             fromViewController.view.alpha = 0;
                              fromViewController.view.layer.transform = CATransform3DMakeScale(0.9, 0.9, 1);
                          } completion:^(BOOL finished) {
+                             fromViewController.view.alpha = 1;
                              [transitionContext completeTransition:YES];
                          }];
         
