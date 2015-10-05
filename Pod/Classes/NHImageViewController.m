@@ -646,10 +646,10 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
                             options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionCurveEaseOut
                          animations:^{
                              toViewController.view.alpha = 1;
-                             fromViewController.view.transform = CGAffineTransformMakeScale(0.9, 0.9);
+                             fromViewController.view.alpha = 0;
                          } completion:^(BOOL finished) {
                              fromViewController.view.alpha = 1;
-                             fromViewController.view.layer.transform = CATransform3DMakeScale(0.9, 0.9, 1);
+                             fromViewController.view.transform = CGAffineTransformMakeScale(0.9, 0.9);
                              [transitionContext completeTransition:YES];
                          }];
         
