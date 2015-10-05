@@ -541,18 +541,16 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     [super didReceiveMemoryWarning];
 }
 
-//- (void)dismissViewControllerAnimated:(BOOL)flag completion:(void (^)(void))completion {
-//
-//    UIViewController *presentingViewController = self.presentingViewController;
-//
-//    [super dismissViewControllerAnimated:flag completion:^{
-//        if (completion) {
-//            completion();
-//        }
-//
-//        presentingViewController.modalPresentationStyle = self.parentPresentationStyle;
-//    }];
-//}
+
+- (void)dismissViewControllerAnimated:(BOOL)flag completion:(void (^)(void))completion {
+    UIViewController *presentingViewController = self.presentingViewController;
+    [super dismissViewControllerAnimated:flag completion:^{
+        presentingViewController.modalPresentationStyle = self.parentPresentationStyle;
+        if (completion) {
+            completion();
+        }
+    }];
+}
 
 + (instancetype)showImage:(UIImage*)image inViewController:(UIViewController*)controller {
     return [self showImage:image withNote:nil inViewController:controller];
@@ -590,9 +588,8 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     NHImageViewController *imageViewController = [[[self class] alloc] init];
     imageViewController.imagesArray = dataArray;
     imageViewController.parentPresentationStyle = controller.modalPresentationStyle;
-    //    controller.modalPresentationStyle = UIModalPresentationCurrentContext;
-    imageViewController.modalPresentationStyle = UIModalPresentationCustom;
-    //    imageViewController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
+    controller.modalPresentationStyle = UIModalPresentationCurrentContext;
+    imageViewController.modalPresentationStyle = UIModalPresentationOverCurrentContext;
     imageViewController.note = note;
     
     [[controller tabBarController] ?: controller presentViewController:imageViewController animated:YES completion:nil];
@@ -630,7 +627,7 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
                             options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionCurveEaseOut
                          animations:^{
                              fromViewController.view.alpha = 0;
-                             toViewController.view.layer.transform = CATransform3DIdentity;
+                             toViewController.view.transform = CGAffineTransformIdentity;
                          } completion:^(BOOL finished) {
                              [fromViewController.view removeFromSuperview];
                              [transitionContext completeTransition:YES];
@@ -648,7 +645,7 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
                             options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionCurveEaseOut
                          animations:^{
                              toViewController.view.alpha = 1;
-                             fromViewController.view.layer.transform = CATransform3DMakeScale(0.9, 0.9, 1);
+                             fromViewController.view.transform = CGAffineTransformMakeScale(0.9, 0.9);
                          } completion:^(BOOL finished) {
                              [transitionContext completeTransition:YES];
                          }];
