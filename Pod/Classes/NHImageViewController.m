@@ -17,6 +17,9 @@ pathForResource:name ofType:@"png"]]
 #define ifNSNull(x, y) \
 ([x isKindOfClass:[NSNull class]]) ? y : (x ?: y)
 
+#define SYSTEM_VERSION_LESS_THAN(v) \
+([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedAscending)
+
 NSString *const kNHImageViewBackgroundColorAttributeName = @"NHImageViewBackgroundColorAttribute";
 NSString *const kNHImageViewTextColorAttributeName = @"NHImageViewTextColorAttribute";
 NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribute";
@@ -649,7 +652,10 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
                              fromViewController.view.alpha = 0;
                          } completion:^(BOOL finished) {
                              fromViewController.view.alpha = 1;
-                             fromViewController.view.transform = CGAffineTransformMakeScale(0.9, 0.9);
+                             
+                             if (!SYSTEM_VERSION_LESS_THAN(@"8.0")) {
+                                 fromViewController.view.transform = CGAffineTransformMakeScale(0.9, 0.9);
+                             }
                              [transitionContext completeTransition:YES];
                          }];
         
