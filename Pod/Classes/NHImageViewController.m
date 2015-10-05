@@ -630,7 +630,7 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
                             options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionCurveEaseOut
                          animations:^{
                              fromViewController.view.alpha = 0;
-                             toViewController.view.transform = CGAffineTransformIdentity;
+//                             toViewController.view.transform = CGAffineTransformIdentity;
                          } completion:^(BOOL finished) {
                              [fromViewController.view removeFromSuperview];
                              [transitionContext completeTransition:YES];
@@ -653,9 +653,9 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
                          } completion:^(BOOL finished) {
                              fromViewController.view.alpha = 1;
                              
-                             if (!SYSTEM_VERSION_LESS_THAN(@"8.0")) {
-                                 fromViewController.view.transform = CGAffineTransformMakeScale(0.9, 0.9);
-                             }
+//                             if (!SYSTEM_VERSION_LESS_THAN(@"8.0")) {
+//                                 fromViewController.view.transform = CGAffineTransformMakeScale(0.9, 0.9);
+//                             }
                              [transitionContext completeTransition:YES];
                          }];
         
