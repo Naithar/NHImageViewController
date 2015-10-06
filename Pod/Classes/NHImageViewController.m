@@ -17,9 +17,6 @@ pathForResource:name ofType:@"png"]]
 #define ifNSNull(x, y) \
 ([x isKindOfClass:[NSNull class]]) ? y : (x ?: y)
 
-//#define SYSTEM_VERSION_LESS_THAN(v) \
-//([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedAscending)
-
 NSString *const kNHImageViewBackgroundColorAttributeName = @"NHImageViewBackgroundColorAttribute";
 NSString *const kNHImageViewTextColorAttributeName = @"NHImageViewTextColorAttribute";
 NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribute";
@@ -34,10 +31,8 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 
 @interface NHImageViewController ()<UIScrollViewDelegate, UIGestureRecognizerDelegate>
 
-@property (nonatomic, assign) UIModalPresentationStyle parentPresentationStyle;
-
-@property (nonatomic, strong) UIWindow * topWindow;
-@property (nonatomic, weak) UIViewController * topViewController;
+@property (nonatomic, strong) UIWindow *containingWindow;
+@property (nonatomic, weak) UIViewController *containingViewController;
 
 @property (nonatomic, copy) NSString *note;
 @property (nonatomic, strong) NSArray *imagesArray;
@@ -81,16 +76,6 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     return settings;
 }
 
-//- (instancetype)init {
-//    self = [super init];
-//
-//    if (self) {
-//        [self commonInit];
-//    }
-//
-//    return self;
-//}
-
 - (id)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     
@@ -112,7 +97,6 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 }
 
 - (void)commonInit {
-    self.transitioningDelegate = self;
     _backgroundColor = ifNSNull([[self class] defaultSettings][kNHImageViewBackgroundColorAttributeName], nil);
     _textColor = ifNSNull([[self class] defaultSettings][kNHImageViewTextColorAttributeName], nil);
     _textFont = ifNSNull([[self class] defaultSettings][kNHImageViewTextFontAttributeName], nil);
@@ -547,44 +531,52 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     [super didReceiveMemoryWarning];
 }
 
++ (void)setOrientation:(UIInterfaceOrientation)orientation {
+    if ([UIApplication sharedApplication].statusBarOrientation != orientation
+        && [[UIDevice currentDevice] respondsToSelector:@selector(setOrientation:)]) {
+        [[UIDevice currentDevice] setValue:@(orientation) forKey:@"orientation"];
+    }
+    
+    [[UIApplication sharedApplication] setStatusBarOrientation:orientation];
+}
+
+- (void)changeOrientationIfNeeded {
+    
+    UIInterfaceOrientationMask supportedOrientations = [self.containingViewController supportedInterfaceOrientations];
+    
+    switch (supportedOrientations) {
+        case UIInterfaceOrientationMaskPortrait:
+            [[self class] setOrientation:UIInterfaceOrientationPortrait];
+            break;
+        case UIInterfaceOrientationMaskLandscape:
+        case UIInterfaceOrientationMaskLandscapeLeft:
+            [[self class] setOrientation:UIInterfaceOrientationLandscapeLeft];
+            break;
+        case UIInterfaceOrientationMaskLandscapeRight:
+            [[self class] setOrientation:UIInterfaceOrientationLandscapeRight];
+            break;
+        default:
+            break;
+    }
+}
 
 - (void)dismissViewControllerAnimated:(BOOL)flag completion:(void (^)(void))completion {
     
-    if (self.topWindow) {
-        
-        if ([UIApplication sharedApplication].statusBarOrientation != UIInterfaceOrientationPortrait) {
-            NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
-            [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
-        }
-        
-            [UIView animateWithDuration:0.3 animations:^{
-                self.topWindow.alpha = 0;
-                self.topViewController.view.transform = CGAffineTransformIdentity;
-            } completion:^(BOOL finished) {
-                self.topViewController.view.transform = CGAffineTransformIdentity;
-                [[[UIApplication sharedApplication] delegate].window makeKeyAndVisible];
-                self.topWindow.hidden = YES;
-                self.topWindow.rootViewController = nil;
-                self.topWindow = nil;
-                
-
-                
-                [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationPortrait];
-                
-                if ([UIApplication sharedApplication].statusBarOrientation != UIInterfaceOrientationPortrait) {
-                    NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
-                    [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
-                }
-            }];
+    if (self.containingWindow) {
+        [self changeOrientationIfNeeded];
+        [UIView animateWithDuration:0.3 animations:^{
+            self.containingWindow.alpha = 0;
+            self.containingViewController.view.transform = CGAffineTransformIdentity;
+        } completion:^(BOOL finished) {
+            self.containingViewController.view.transform = CGAffineTransformIdentity;
+            [[[UIApplication sharedApplication] delegate].window makeKeyAndVisible];
+            self.containingWindow.hidden = YES;
+            self.containingWindow.rootViewController = nil;
+            self.containingWindow = nil;
+        }];
     }
     else {
-        UIViewController *presentingViewController = self.presentingViewController;
-        [super dismissViewControllerAnimated:flag completion:^{
-            presentingViewController.modalPresentationStyle = self.parentPresentationStyle;
-            if (completion) {
-                completion();
-            }
-        }];
+        [super dismissViewControllerAnimated:flag completion:completion];
     }
 }
 
@@ -620,41 +612,24 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     if (dataArray.count == 0) {
         return nil;
     }
-    
-    
-    UIWindow * window = [self createTopWindow];
-    
+
     NHImageViewController *imageViewController = [[[self class] alloc] init];
-    imageViewController.imagesArray = dataArray;
-    imageViewController.parentPresentationStyle = controller.modalPresentationStyle;
-    controller.modalPresentationStyle = UIModalPresentationCurrentContext;
-    imageViewController.modalPresentationStyle = UIModalPresentationOverCurrentContext;
-    imageViewController.note = note;
+    UIWindow *window = [self createTopWindow];
     
+
+    imageViewController.imagesArray = dataArray;
+    imageViewController.note = note;
     window.rootViewController = imageViewController;
     
-    imageViewController.topWindow = window;
-    imageViewController.topViewController = controller;
+    imageViewController.containingWindow = window;
+    imageViewController.containingViewController = controller;
     
-    
-    [self presentTopWindowAsModalViewController:window controller:controller];
-    
-//    [[controller tabBarController] ?: controller presentViewController:imageViewController animated:YES completion:nil];
+    [self presentWindow:window forController:controller];
     
     return imageViewController;
 }
 
-
-//
-
-
-+ (void)presentTopWindowAsModalViewController:(UIWindow * ) window controller:(UIViewController *)controller
-{
-//    CGRect originalFramr = window.frame;
-//    CGRect fr = window.frame;
-//    fr.origin.y = originalFramr.size.height;
-//    window.frame = fr;
-    
++ (void)presentWindow:(UIWindow *)window forController:(UIViewController *)controller {
     window.alpha = 0;
     controller.view.alpha = 0.75;
     [UIView animateWithDuration:0.3 animations:^{
@@ -662,7 +637,6 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
         
         controller.view.transform = CGAffineTransformMakeScale(0.9, 0.9);
         controller.view.alpha = 0;
-//        window.frame = originalFramr;
     } completion:^(BOOL finished) {
         controller.view.alpha = 1;
     }];
@@ -674,9 +648,7 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     UIWindow *topWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     topWindow.backgroundColor = [UIColor clearColor];
     topWindow.windowLevel = UIWindowLevelNormal;
-//    topWindow.alpha = 0.8;
     topWindow.hidden = NO;
-    
     return topWindow;
 }
 
@@ -684,67 +656,8 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     return YES;
 }
 
-
-
-
-
 - (void)setStartingPage:(NSInteger)startPage {
     self.currentPage = startPage;
 }
-
-//- (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
-//                                                                  presentingController:(UIViewController *)presenting
-//                                                                      sourceController:(UIViewController *)source {
-//    return self;
-//}
-//
-//- (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed {
-//    return self;
-//}
-//
-//- (NSTimeInterval)transitionDuration:(id<UIViewControllerContextTransitioning>)transitionContext {
-//    return 0.3;
-//}
-//
-//- (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext {
-//    UIViewController *fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
-//    UIViewController *toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
-//    
-//    UIView *containerView = [transitionContext containerView];
-//    
-//    if (fromViewController == self) {
-//        [UIView animateWithDuration:0.3
-//                              delay:0
-//                            options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionCurveEaseOut
-//                         animations:^{
-//                             fromViewController.view.alpha = 0;
-//                         } completion:^(BOOL finished) {
-//                             toViewController.view.alpha = 1;
-//                             [fromViewController.view removeFromSuperview];
-//                             [transitionContext completeTransition:YES];
-//                         }];
-//    }
-//    else {
-//        CGRect finalFrame = [transitionContext finalFrameForViewController:toViewController];
-//        toViewController.view.frame = finalFrame;
-//        [containerView addSubview:toViewController.view];
-//        [containerView bringSubviewToFront:toViewController.view];
-//        toViewController.view.alpha = 0;
-//        fromViewController.view.alpha = 0.75;
-//        
-//        [UIView animateWithDuration:0.3
-//                              delay:0
-//                            options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionCurveEaseOut
-//                         animations:^{
-//                             toViewController.view.alpha = 1;
-//                             fromViewController.view.alpha = 0;
-//                         } completion:^(BOOL finished) {
-//                             fromViewController.view.alpha = 1;
-//                             [transitionContext completeTransition:YES];
-//                         }];
-//        
-//    }
-//}
-
 
 @end
