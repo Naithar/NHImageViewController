@@ -548,13 +548,19 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
         case UIInterfaceOrientationMaskPortrait:
             [[self class] setOrientation:UIInterfaceOrientationPortrait];
             break;
-        case UIInterfaceOrientationMaskLandscape:
         case UIInterfaceOrientationMaskLandscapeLeft:
             [[self class] setOrientation:UIInterfaceOrientationLandscapeLeft];
             break;
         case UIInterfaceOrientationMaskLandscapeRight:
             [[self class] setOrientation:UIInterfaceOrientationLandscapeRight];
             break;
+        case UIInterfaceOrientationMaskLandscape: {
+            UIInterfaceOrientation currentOrientation = [UIApplication sharedApplication].statusBarOrientation;
+            if (currentOrientation != UIInterfaceOrientationLandscapeLeft
+                && currentOrientation != UIInterfaceOrientationLandscapeRight) {
+                [[self class] setOrientation:UIInterfaceOrientationLandscapeLeft];
+            }
+        } break;
         default:
             break;
     }
