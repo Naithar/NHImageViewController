@@ -656,11 +656,15 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 //    window.frame = fr;
     
     window.alpha = 0;
+    controller.view.alpha = 0.75;
     [UIView animateWithDuration:0.3 animations:^{
         window.alpha = 1;
         
         controller.view.transform = CGAffineTransformMakeScale(0.9, 0.9);
+        controller.view.alpha = 0;
 //        window.frame = originalFramr;
+    } completion:^(BOOL finished) {
+        controller.view.alpha = 1;
     }];
 }
 
