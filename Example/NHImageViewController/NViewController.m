@@ -45,4 +45,16 @@
     // Dispose of any resources that can be recreated.
 }
 
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    return UIInterfaceOrientationMaskPortrait;
+}
+
+- (BOOL)prefersStatusBarHidden {
+    return NO;
+}
+
+- (BOOL)shouldAutorotate {
+    return YES;
+}
+
 @end
