@@ -1,0 +1,6 @@
+#include "FLAnimatedImage.xcconfig"
+GCC_PREPROCESSOR_DEFINITIONS = $(inherited) COCOAPODS=1
+HEADER_SEARCH_PATHS = "${PODS_ROOT}/Headers/Private" "${PODS_ROOT}/Headers/Private/FLAnimatedImage" "${PODS_ROOT}/Headers/Public" "${PODS_ROOT}/Headers/Public/AFNetworking" "${PODS_ROOT}/Headers/Public/Expecta" "${PODS_ROOT}/Headers/Public/FLAnimatedImage" "${PODS_ROOT}/Headers/Public/MACircleProgressIndicator" "${PODS_ROOT}/Headers/Public/NHImageViewController" "${PODS_ROOT}/Headers/Public/Specta"
+OTHER_LDFLAGS = ${FLANIMATEDIMAGE_OTHER_LDFLAGS}
+PODS_ROOT = ${SRCROOT}
+SKIP_INSTALL = YES
