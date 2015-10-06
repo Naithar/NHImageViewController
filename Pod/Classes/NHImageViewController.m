@@ -36,6 +36,8 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 
 @property (nonatomic, assign) UIModalPresentationStyle parentPresentationStyle;
 
+@property (nonatomic, strong) UIWindow * topWindow;
+
 @property (nonatomic, copy) NSString *note;
 @property (nonatomic, strong) NSArray *imagesArray;
 
@@ -546,13 +548,39 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 
 
 - (void)dismissViewControllerAnimated:(BOOL)flag completion:(void (^)(void))completion {
-    UIViewController *presentingViewController = self.presentingViewController;
-    [super dismissViewControllerAnimated:flag completion:^{
-        presentingViewController.modalPresentationStyle = self.parentPresentationStyle;
-        if (completion) {
-            completion();
+    
+    if (self.topWindow) {
+        if ([UIApplication sharedApplication].statusBarOrientation != UIInterfaceOrientationPortrait) {
+            NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
+            [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
         }
-    }];
+        
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [UIView animateWithDuration:0.3 animations:^{
+                CGRect fr = self.topWindow.frame;
+                fr.origin.y = self.view.frame.size.height;
+                self.topWindow.frame = fr;
+            } completion:^(BOOL finished) {
+                
+                [[[UIApplication sharedApplication] delegate].window makeKeyAndVisible];
+                self.topWindow.hidden = YES;
+                self.topWindow.rootViewController = nil;
+                self.topWindow = nil;
+                
+                [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationPortrait];
+            }];
+        });
+
+    }
+    else {
+        UIViewController *presentingViewController = self.presentingViewController;
+        [super dismissViewControllerAnimated:flag completion:^{
+            presentingViewController.modalPresentationStyle = self.parentPresentationStyle;
+            if (completion) {
+                completion();
+            }
+        }];
+    }
 }
 
 + (instancetype)showImage:(UIImage*)image inViewController:(UIViewController*)controller {
@@ -588,6 +616,11 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
         return nil;
     }
     
+    
+    UIWindow * window = [self createTopWindow];
+    
+    
+    
     NHImageViewController *imageViewController = [[[self class] alloc] init];
     imageViewController.imagesArray = dataArray;
     imageViewController.parentPresentationStyle = controller.modalPresentationStyle;
@@ -595,10 +628,51 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     imageViewController.modalPresentationStyle = UIModalPresentationOverCurrentContext;
     imageViewController.note = note;
     
-    [[controller tabBarController] ?: controller presentViewController:imageViewController animated:YES completion:nil];
+    window.rootViewController = imageViewController;
+    
+    imageViewController.topWindow = window;
+    
+    [self presentTopWindowAsModalViewController:window];
+    
+//    [[controller tabBarController] ?: controller presentViewController:imageViewController animated:YES completion:nil];
     
     return imageViewController;
 }
+
+
+//
+
+
++ (void)presentTopWindowAsModalViewController:(UIWindow * ) window
+{
+    CGRect originalFramr = window.frame;
+    CGRect fr = window.frame;
+    fr.origin.y = originalFramr.size.height;
+    window.frame = fr;
+    
+    [UIView animateWithDuration:0.3 animations:^{
+        
+        window.frame = originalFramr;
+    }];
+}
+
+
++ (UIWindow*)createTopWindow
+{
+    UIWindow *topWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    topWindow.backgroundColor = [UIColor greenColor];
+    topWindow.windowLevel = UIWindowLevelNormal;
+    topWindow.alpha = 0.8;
+    topWindow.hidden = NO;
+    
+    return topWindow;
+}
+
+
+
+
+
+
 
 - (void)setStartingPage:(NSInteger)startPage {
     self.currentPage = startPage;
