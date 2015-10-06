@@ -32,11 +32,12 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 
 @end
 
-@interface NHImageViewController ()<UIScrollViewDelegate, UIGestureRecognizerDelegate, UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning>
+@interface NHImageViewController ()<UIScrollViewDelegate, UIGestureRecognizerDelegate>
 
 @property (nonatomic, assign) UIModalPresentationStyle parentPresentationStyle;
 
 @property (nonatomic, strong) UIWindow * topWindow;
+@property (nonatomic, weak) UIViewController * topViewController;
 
 @property (nonatomic, copy) NSString *note;
 @property (nonatomic, strong) NSArray *imagesArray;
@@ -550,27 +551,31 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 - (void)dismissViewControllerAnimated:(BOOL)flag completion:(void (^)(void))completion {
     
     if (self.topWindow) {
+        
         if ([UIApplication sharedApplication].statusBarOrientation != UIInterfaceOrientationPortrait) {
             NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
             [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
         }
         
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             [UIView animateWithDuration:0.3 animations:^{
-                CGRect fr = self.topWindow.frame;
-                fr.origin.y = self.view.frame.size.height;
-                self.topWindow.frame = fr;
+                self.topWindow.alpha = 0;
+                self.topViewController.view.transform = CGAffineTransformIdentity;
             } completion:^(BOOL finished) {
-                
+                self.topViewController.view.transform = CGAffineTransformIdentity;
                 [[[UIApplication sharedApplication] delegate].window makeKeyAndVisible];
                 self.topWindow.hidden = YES;
                 self.topWindow.rootViewController = nil;
                 self.topWindow = nil;
                 
-                [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationPortrait];
-            }];
-        });
 
+                
+                [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationPortrait];
+                
+                if ([UIApplication sharedApplication].statusBarOrientation != UIInterfaceOrientationPortrait) {
+                    NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
+                    [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
+                }
+            }];
     }
     else {
         UIViewController *presentingViewController = self.presentingViewController;
@@ -619,8 +624,6 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     
     UIWindow * window = [self createTopWindow];
     
-    
-    
     NHImageViewController *imageViewController = [[[self class] alloc] init];
     imageViewController.imagesArray = dataArray;
     imageViewController.parentPresentationStyle = controller.modalPresentationStyle;
@@ -631,8 +634,10 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     window.rootViewController = imageViewController;
     
     imageViewController.topWindow = window;
+    imageViewController.topViewController = controller;
     
-    [self presentTopWindowAsModalViewController:window];
+    
+    [self presentTopWindowAsModalViewController:window controller:controller];
     
 //    [[controller tabBarController] ?: controller presentViewController:imageViewController animated:YES completion:nil];
     
@@ -643,16 +648,19 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 //
 
 
-+ (void)presentTopWindowAsModalViewController:(UIWindow * ) window
++ (void)presentTopWindowAsModalViewController:(UIWindow * ) window controller:(UIViewController *)controller
 {
-    CGRect originalFramr = window.frame;
-    CGRect fr = window.frame;
-    fr.origin.y = originalFramr.size.height;
-    window.frame = fr;
+//    CGRect originalFramr = window.frame;
+//    CGRect fr = window.frame;
+//    fr.origin.y = originalFramr.size.height;
+//    window.frame = fr;
     
+    window.alpha = 0;
     [UIView animateWithDuration:0.3 animations:^{
+        window.alpha = 1;
         
-        window.frame = originalFramr;
+        controller.view.transform = CGAffineTransformMakeScale(0.9, 0.9);
+//        window.frame = originalFramr;
     }];
 }
 
@@ -660,15 +668,17 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 + (UIWindow*)createTopWindow
 {
     UIWindow *topWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-    topWindow.backgroundColor = [UIColor greenColor];
+    topWindow.backgroundColor = [UIColor clearColor];
     topWindow.windowLevel = UIWindowLevelNormal;
-    topWindow.alpha = 0.8;
+//    topWindow.alpha = 0.8;
     topWindow.hidden = NO;
     
     return topWindow;
 }
 
-
+- (BOOL)prefersStatusBarHidden {
+    return YES;
+}
 
 
 
@@ -678,59 +688,59 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     self.currentPage = startPage;
 }
 
-- (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
-                                                                  presentingController:(UIViewController *)presenting
-                                                                      sourceController:(UIViewController *)source {
-    return self;
-}
-
-- (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed {
-    return self;
-}
-
-- (NSTimeInterval)transitionDuration:(id<UIViewControllerContextTransitioning>)transitionContext {
-    return 0.3;
-}
-
-- (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext {
-    UIViewController *fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
-    UIViewController *toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
-    
-    UIView *containerView = [transitionContext containerView];
-    
-    if (fromViewController == self) {
-        [UIView animateWithDuration:0.3
-                              delay:0
-                            options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionCurveEaseOut
-                         animations:^{
-                             fromViewController.view.alpha = 0;
-                         } completion:^(BOOL finished) {
-                             toViewController.view.alpha = 1;
-                             [fromViewController.view removeFromSuperview];
-                             [transitionContext completeTransition:YES];
-                         }];
-    }
-    else {
-        CGRect finalFrame = [transitionContext finalFrameForViewController:toViewController];
-        toViewController.view.frame = finalFrame;
-        [containerView addSubview:toViewController.view];
-        [containerView bringSubviewToFront:toViewController.view];
-        toViewController.view.alpha = 0;
-        fromViewController.view.alpha = 0.75;
-        
-        [UIView animateWithDuration:0.3
-                              delay:0
-                            options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionCurveEaseOut
-                         animations:^{
-                             toViewController.view.alpha = 1;
-                             fromViewController.view.alpha = 0;
-                         } completion:^(BOOL finished) {
-                             fromViewController.view.alpha = 1;
-                             [transitionContext completeTransition:YES];
-                         }];
-        
-    }
-}
+//- (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
+//                                                                  presentingController:(UIViewController *)presenting
+//                                                                      sourceController:(UIViewController *)source {
+//    return self;
+//}
+//
+//- (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed {
+//    return self;
+//}
+//
+//- (NSTimeInterval)transitionDuration:(id<UIViewControllerContextTransitioning>)transitionContext {
+//    return 0.3;
+//}
+//
+//- (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext {
+//    UIViewController *fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
+//    UIViewController *toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
+//    
+//    UIView *containerView = [transitionContext containerView];
+//    
+//    if (fromViewController == self) {
+//        [UIView animateWithDuration:0.3
+//                              delay:0
+//                            options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionCurveEaseOut
+//                         animations:^{
+//                             fromViewController.view.alpha = 0;
+//                         } completion:^(BOOL finished) {
+//                             toViewController.view.alpha = 1;
+//                             [fromViewController.view removeFromSuperview];
+//                             [transitionContext completeTransition:YES];
+//                         }];
+//    }
+//    else {
+//        CGRect finalFrame = [transitionContext finalFrameForViewController:toViewController];
+//        toViewController.view.frame = finalFrame;
+//        [containerView addSubview:toViewController.view];
+//        [containerView bringSubviewToFront:toViewController.view];
+//        toViewController.view.alpha = 0;
+//        fromViewController.view.alpha = 0.75;
+//        
+//        [UIView animateWithDuration:0.3
+//                              delay:0
+//                            options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionCurveEaseOut
+//                         animations:^{
+//                             toViewController.view.alpha = 1;
+//                             fromViewController.view.alpha = 0;
+//                         } completion:^(BOOL finished) {
+//                             fromViewController.view.alpha = 1;
+//                             [transitionContext completeTransition:YES];
+//                         }];
+//        
+//    }
+//}
 
 
 @end
