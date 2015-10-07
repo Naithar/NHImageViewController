@@ -3,7 +3,7 @@
 //  Pods
 //
 //  Created by Sergey Minakov on 08.05.15.
-//
+//  Window feature by Lavskiy Peter @https://github.com/Lavskiy
 //
 
 #import "NHImageViewController.h"
@@ -57,6 +57,9 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 
 @property (nonatomic, strong) UITapGestureRecognizer *tapGesture;
 @property (nonatomic, strong) UITapGestureRecognizer *doubleTapGesture;
+
+@property (nonatomic, assign) BOOL previousStatusBarHidden;
+@property (nonatomic, assign) BOOL shouldUsePreviousStatusBarHidden;
 
 @end
 
@@ -578,6 +581,8 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     
     if (self.containingWindow) {
         [self changeOrientationIfNeeded];
+        self.shouldUsePreviousStatusBarHidden = YES;
+        [self setNeedsStatusBarAppearanceUpdate];
         [UIView animateWithDuration:flag ? 0.3 : 0 animations:^{
             self.containingWindow.alpha = 0;
             self.containingViewController.view.transform = CGAffineTransformIdentity;
@@ -626,11 +631,14 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     if (dataArray.count == 0) {
         return nil;
     }
-
+    
     NHImageViewController *imageViewController = [[[self class] alloc] init];
-    UIWindow *window = [self createTopWindow];
+    UIWindow *window = [self createImageViewWindow];
     UIViewController *containingViewController = controller.view.window.rootViewController;
-
+    
+    imageViewController.previousStatusBarHidden = [[UIApplication sharedApplication] isStatusBarHidden];
+    imageViewController.shouldUsePreviousStatusBarHidden = YES;
+    
     imageViewController.imagesArray = dataArray;
     imageViewController.note = note;
     window.rootViewController = imageViewController;
@@ -638,29 +646,33 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     imageViewController.containingWindow = window;
     imageViewController.containingViewController = containingViewController;
     
-    [self presentWindow:window forController:containingViewController];
+    [self presentImageViewController:imageViewController inWindow:window forController:containingViewController];
     
     return imageViewController;
 }
 
-+ (void)presentWindow:(UIWindow *)window forController:(UIViewController *)controller {
++ (void)presentImageViewController:(NHImageViewController *)imageViewController
+                          inWindow:(UIWindow *)window
+                     forController:(UIViewController *)controller {
     window.alpha = 0;
     controller.view.alpha = 0.75;
     
-    [UIView animateWithDuration:0.15 animations:^{
+    [UIView animateWithDuration:0.5 animations:^{
         controller.view.transform = CGAffineTransformMakeScale(0.9, 0.9);
-        controller.view.alpha = 0;
     }];
-
+    
     [UIView animateWithDuration:0.3 animations:^{
         window.alpha = 1;
+        controller.view.alpha = 0;
     } completion:^(BOOL finished) {
         controller.view.alpha = 1;
+        imageViewController.shouldUsePreviousStatusBarHidden = NO;
+        [imageViewController setNeedsStatusBarAppearanceUpdate];
     }];
 }
 
 
-+ (UIWindow*)createTopWindow
++ (UIWindow*)createImageViewWindow
 {
     UIWindow *topWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     topWindow.backgroundColor = [UIColor clearColor];
@@ -670,7 +682,11 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 }
 
 - (BOOL)prefersStatusBarHidden {
-    return YES;
+    return self.shouldUsePreviousStatusBarHidden ? self.previousStatusBarHidden : YES;
+}
+
+- (UIStatusBarAnimation)preferredStatusBarUpdateAnimation {
+    return UIStatusBarAnimationNone;
 }
 
 - (void)setStartingPage:(NSInteger)startPage {
