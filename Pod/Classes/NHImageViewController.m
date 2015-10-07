@@ -657,9 +657,11 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     window.alpha = 0;
     controller.view.alpha = 0.75;
     
-    [UIView animateWithDuration:0.5 animations:^{
-        controller.view.transform = CGAffineTransformMakeScale(0.9, 0.9);
-    }];
+    if ([[UIApplication sharedApplication] statusBarFrame].size.height < 30) {
+        [UIView animateWithDuration:0.5 animations:^{
+            controller.view.transform = CGAffineTransformMakeScale(0.9, 0.9);
+        }];
+    }
     
     [UIView animateWithDuration:0.3 animations:^{
         window.alpha = 1;
@@ -682,6 +684,10 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 }
 
 - (BOOL)prefersStatusBarHidden {
+    if ([[UIApplication sharedApplication] statusBarFrame].size.height > 30) {
+        return self.previousStatusBarHidden;
+    }
+    
     return self.shouldUsePreviousStatusBarHidden ? self.previousStatusBarHidden : YES;
 }
 
