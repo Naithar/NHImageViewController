@@ -578,7 +578,7 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     
     if (self.containingWindow) {
         [self changeOrientationIfNeeded];
-        [UIView animateWithDuration:0.3 animations:^{
+        [UIView animateWithDuration:flag ? 0.3 : 0 animations:^{
             self.containingWindow.alpha = 0;
             self.containingViewController.view.transform = CGAffineTransformIdentity;
         } completion:^(BOOL finished) {
@@ -629,16 +629,16 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 
     NHImageViewController *imageViewController = [[[self class] alloc] init];
     UIWindow *window = [self createTopWindow];
-    
+    UIViewController *containingViewController = controller.view.window.rootViewController;
 
     imageViewController.imagesArray = dataArray;
     imageViewController.note = note;
     window.rootViewController = imageViewController;
     
     imageViewController.containingWindow = window;
-    imageViewController.containingViewController = controller;
+    imageViewController.containingViewController = containingViewController;
     
-    [self presentWindow:window forController:controller];
+    [self presentWindow:window forController:containingViewController];
     
     return imageViewController;
 }

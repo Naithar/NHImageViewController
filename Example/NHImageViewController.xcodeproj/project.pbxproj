@@ -23,6 +23,7 @@
 		6003F5BA195388D20070C39A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 6003F5B8195388D20070C39A /* InfoPlist.strings */; };
 		6003F5BC195388D20070C39A /* Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 6003F5BB195388D20070C39A /* Tests.m */; };
 		8DBD82A2D173137F493BEFEF /* libPods-NHImageViewController.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2534B9D9BD85F9207028A478 /* libPods-NHImageViewController.a */; };
+		90596ABB1BC50D53003983A1 /* NMainNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 90596ABA1BC50D53003983A1 /* NMainNavigationController.m */; settings = {ASSET_TAGS = (); }; };
 		9F1B6C7B30DF86FE360555E9 /* libPods-Tests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F47FDC96AB306305B2CEFB3C /* libPods-Tests.a */; };
 /* End PBXBuildFile section */
 
@@ -61,6 +62,8 @@
 		6003F5BB195388D20070C39A /* Tests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Tests.m; sourceTree = "<group>"; };
 		606FC2411953D9B200FFA9A0 /* Tests-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Tests-Prefix.pch"; sourceTree = "<group>"; };
 		75B3EC84FB0592AEDD82F093 /* Pods-Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Tests.release.xcconfig"; path = "Pods/Target Support Files/Pods-Tests/Pods-Tests.release.xcconfig"; sourceTree = "<group>"; };
+		90596AB91BC50D53003983A1 /* NMainNavigationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMainNavigationController.h; sourceTree = "<group>"; };
+		90596ABA1BC50D53003983A1 /* NMainNavigationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NMainNavigationController.m; sourceTree = "<group>"; };
 		96AA76D99B562C5C0F753641 /* Pods-Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Tests/Pods-Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		B50375D6C15FF532B2C64B5D /* NHImageViewController.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = NHImageViewController.podspec; path = ../NHImageViewController.podspec; sourceTree = "<group>"; };
 		CC3598B4EC67342354358FA1 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
@@ -133,6 +136,8 @@
 			isa = PBXGroup;
 			children = (
 				6003F59C195388D20070C39A /* NAppDelegate.h */,
+				90596AB91BC50D53003983A1 /* NMainNavigationController.h */,
+				90596ABA1BC50D53003983A1 /* NMainNavigationController.m */,
 				6003F59D195388D20070C39A /* NAppDelegate.m */,
 				6003F59F195388D20070C39A /* Main_iPhone.storyboard */,
 				6003F5A2195388D20070C39A /* Main_iPad.storyboard */,
@@ -362,6 +367,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6003F59E195388D20070C39A /* NAppDelegate.m in Sources */,
+				90596ABB1BC50D53003983A1 /* NMainNavigationController.m in Sources */,
 				6003F5A7195388D20070C39A /* NViewController.m in Sources */,
 				6003F59A195388D20070C39A /* main.m in Sources */,
 			);

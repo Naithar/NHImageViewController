@@ -23,7 +23,7 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
 
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [[NHImageViewController presentIn:self
                                 withData:@[
                                            @"https://psv4.vk.me/c423527/u90579525/docs/83c70ccbc9e7/Heres-my-favorite-nope-gif.gif?extra=XMxjKubZSWK1h1FdthBd4b7Y1mDZUzx70z8581--w1PO3SMNwO2tUaqy3MVI5Yvbc_v2FZdRdS0VgjHnh4puQDk0-5zz",
