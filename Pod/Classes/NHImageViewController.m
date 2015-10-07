@@ -646,11 +646,14 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 + (void)presentWindow:(UIWindow *)window forController:(UIViewController *)controller {
     window.alpha = 0;
     controller.view.alpha = 0.75;
-    [UIView animateWithDuration:0.3 animations:^{
-        window.alpha = 1;
-        
+    
+    [UIView animateWithDuration:0.15 animations:^{
         controller.view.transform = CGAffineTransformMakeScale(0.9, 0.9);
         controller.view.alpha = 0;
+    }];
+
+    [UIView animateWithDuration:0.3 animations:^{
+        window.alpha = 1;
     } completion:^(BOOL finished) {
         controller.view.alpha = 1;
     }];
