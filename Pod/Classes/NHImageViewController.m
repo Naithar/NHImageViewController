@@ -543,33 +543,33 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
     [[UIApplication sharedApplication] setStatusBarOrientation:orientation];
 }
 
-- (void)changeOrientationIfNeeded {
++ (void)changeOrientationIfNeeded {
     
-    UIInterfaceOrientationMask supportedOrientations = [self.containingViewController supportedInterfaceOrientations];
+    UIInterfaceOrientationMask supportedOrientations = [[[UIApplication sharedApplication] delegate].window.rootViewController supportedInterfaceOrientations];
     UIInterfaceOrientation currentOrientation = [UIApplication sharedApplication].statusBarOrientation;
     
     switch (supportedOrientations) {
         case UIInterfaceOrientationMaskPortrait:
-            [[self class] setOrientation:UIInterfaceOrientationPortrait];
+            [self setOrientation:UIInterfaceOrientationPortrait];
             break;
         case UIInterfaceOrientationMaskPortraitUpsideDown:
-            [[self class] setOrientation:UIInterfaceOrientationPortraitUpsideDown];
+            [self setOrientation:UIInterfaceOrientationPortraitUpsideDown];
             break;
         case UIInterfaceOrientationMaskLandscapeLeft:
-            [[self class] setOrientation:UIInterfaceOrientationLandscapeLeft];
+            [self setOrientation:UIInterfaceOrientationLandscapeLeft];
             break;
         case UIInterfaceOrientationMaskLandscapeRight:
-            [[self class] setOrientation:UIInterfaceOrientationLandscapeRight];
+            [self setOrientation:UIInterfaceOrientationLandscapeRight];
             break;
         case UIInterfaceOrientationMaskLandscape:
             if (currentOrientation != UIInterfaceOrientationLandscapeLeft
                 && currentOrientation != UIInterfaceOrientationLandscapeRight) {
-                [[self class] setOrientation:UIInterfaceOrientationLandscapeLeft];
+                [self setOrientation:UIInterfaceOrientationLandscapeLeft];
             }
             break;
         case UIInterfaceOrientationMaskAllButUpsideDown:
             if (currentOrientation == UIInterfaceOrientationPortraitUpsideDown) {
-                [[self class] setOrientation:UIInterfaceOrientationPortrait];
+                [self setOrientation:UIInterfaceOrientationPortrait];
             }
             break;
         default:
@@ -580,7 +580,7 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
 - (void)dismissViewControllerAnimated:(BOOL)flag completion:(void (^)(void))completion {
     
     if (self.containingWindow) {
-        [self changeOrientationIfNeeded];
+        [[self class] changeOrientationIfNeeded];
         self.shouldUsePreviousStatusBarHidden = YES;
         [self setNeedsStatusBarAppearanceUpdate];
         [UIView animateWithDuration:flag ? 0.3 : 0 animations:^{
@@ -592,6 +592,11 @@ NSString *const kNHImageViewTextFontAttributeName = @"NHImageViewTextFontAttribu
             self.containingWindow.hidden = YES;
             self.containingWindow.rootViewController = nil;
             self.containingWindow = nil;
+            [[self class] changeOrientationIfNeeded];
+            
+            if (completion) {
+                completion();
+            }
         }];
     }
     else {
