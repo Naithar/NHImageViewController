@@ -24,8 +24,17 @@
     // Dispose of any resources that can be recreated.
 }
 
+
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
-    return UIInterfaceOrientationMaskPortrait;
+    return UIInterfaceOrientationMaskLandscape;
+}
+
+- (BOOL)shouldAutorotate {
+    return NO;
+}
+
+- (UIInterfaceOrientation)preferredInterfaceOrientationForPresentation {
+    return UIInterfaceOrientationLandscapeLeft;
 }
 
 @end

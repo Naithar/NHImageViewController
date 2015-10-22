@@ -8,84 +8,22 @@
 
 #import "NHImageScrollView.h"
 #import <MACircleProgressIndicator/MACircleProgressIndicator.h>
-#import <AFNetworking/AFNetworking.h>
+#import <SDWebImage/SDWebImageManager.h>
+#import <SDWebImage/UIImage+GIF.h>
 
 #define image(name) \
 [UIImage imageWithContentsOfFile: \
 [[NSBundle bundleForClass:[NHImageScrollView class]]\
 pathForResource:name ofType:@"png"]]
 
-typedef void(^NHSuccessBlock)(id);
-typedef void(^NHFailBlock)(void);
-typedef void(^NHDownloadBlock)(float);
-
-@interface NHImageOperationItem : NSObject
-
-@property (nonatomic, strong) AFHTTPRequestOperation *operation;
-@property (nonatomic, strong) NHSuccessBlock successBlock;
-@property (nonatomic, strong) NHFailBlock failBlock;
-@property (nonatomic, strong) NHDownloadBlock downloadBlock;
-
-@end
-
-@implementation NHImageOperationItem
-
-- (instancetype)initWithOperation:(AFHTTPRequestOperation*)operation
-                    succeessBlock:(NHSuccessBlock)successBlock
-                        failBlock:(NHFailBlock)failBlock
-                    downloadBlock:(NHDownloadBlock)downloadBlock {
-    self = [super init];
-
-    if (self) {
-        _operation = operation;
-        _successBlock = successBlock;
-        _failBlock = failBlock;
-        _downloadBlock = downloadBlock;
-    }
-
-    return self;
-}
-
-@end
-
 @interface NHImageScrollView ()<UIScrollViewDelegate>
 
-@property (nonatomic, strong) FLAnimatedImageView *contentView;
+@property (nonatomic, strong) UIImageView *contentView;
 @property (nonatomic, strong) MACircleProgressIndicator *progressIndicator;
 @property (nonatomic, assign) BOOL loadingImage;
 @end
 
 @implementation NHImageScrollView
-
-+ (NSMutableDictionary*)operationStorage {
-    static dispatch_once_t token;
-    __strong static NSMutableDictionary* instance = nil;
-    dispatch_once(&token, ^{
-        instance = [[NSMutableDictionary alloc] init];
-    });
-
-    return instance;
-}
-
-+ (NSCache*)imageControllerCache {
-    static dispatch_once_t token;
-    __strong static NSCache* instance = nil;
-    dispatch_once(&token, ^{
-        instance = [[NSCache alloc] init];
-    });
-
-    return instance;
-}
-//
-//- (instancetype)init {
-//    self = [super init];
-//
-//    if (self) {
-//        [self commonInit];
-//    }
-//
-//    return self;
-//}
 
 - (id)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
@@ -133,7 +71,7 @@ typedef void(^NHDownloadBlock)(float);
     self.showsHorizontalScrollIndicator = NO;
     self.backgroundColor = [UIColor clearColor];
 
-    self.contentView = [[FLAnimatedImageView alloc] init];
+    self.contentView = [[UIImageView alloc] init];
     self.contentView.backgroundColor = [UIColor clearColor];
     [self addSubview:self.contentView];
 
@@ -166,7 +104,9 @@ typedef void(^NHDownloadBlock)(float);
 - (void)sizeContent {
     [self.contentView sizeToFit];
 
-    CGRect bounds = self.contentView.animatedImage ? (CGRect) { .size = self.contentView.animatedImage.size } : self.contentView.frame;
+    CGRect bounds = CGSizeEqualToSize(self.contentView.bounds.size, CGSizeZero)
+    ? (CGRect) { .size = self.contentView.image.size }
+    : self.contentView.bounds;
 
     if (bounds.size.height) {
         CGFloat ratio = bounds.size.width / bounds.size.height;
@@ -220,10 +160,6 @@ typedef void(^NHDownloadBlock)(float);
         UIImageWriteToSavedPhotosAlbum(self.image, nil, nil, nil);
         return YES;
     }
-    else if (self.animatedImage) {
-        UIImageWriteToSavedPhotosAlbum(self.animatedImage.posterImage, nil, nil, nil);
-        return YES;
-    }
 
     return NO;
 }
@@ -235,160 +171,39 @@ typedef void(^NHDownloadBlock)(float);
     if (self.image) {
         [self showImage:self.image];
     }
-    else if (self.animatedImage) {
-        [self showAnimatedImage:self.animatedImage];
-    }
     else if (self.imagePath
              && [self.imagePath length]) {
+        
+        self.progressIndicator.value = 0;
+        self.progressIndicator.hidden = NO;
+        self.loadingImage = YES;
 
-        id resultImage = [[[self class] imageControllerCache] objectForKey:self.imagePath];
+        __weak __typeof(self) weakSelf = self;
+        [SDWebImageManager.sharedManager
+         downloadImageWithURL:[NSURL URLWithString:self.imagePath]
+         options:0
+         progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+             __strong __typeof(weakSelf) strongSelf = weakSelf;
+             CGFloat value = 0;
+             
+             if (expectedSize) {
+                 value = (double)receivedSize / (double)expectedSize;
+             }
 
-        if (resultImage
-            && [resultImage isKindOfClass:[UIImage class]]) {
-            [self showImage:resultImage];
-        }
-        else if (resultImage
-                 && [resultImage isKindOfClass:[FLAnimatedImage class]]) {
-            [self showAnimatedImage:resultImage];
-        }
-        else {
-            self.progressIndicator.value = 0;
-            self.progressIndicator.hidden = NO;
-            self.loadingImage = YES;
-
-            NHImageOperationItem *operationData = [[[self class] operationStorage] objectForKey:self.imagePath];
-
-            AFHTTPRequestOperation *operation = nil;
-            NHSuccessBlock previousSuccessBlock = nil;
-            NHFailBlock previousFailBlock = nil;
-            NHDownloadBlock previousDownloadBlock = nil;
-
-            if (operationData) {
-                operation = operationData.operation;
-                previousSuccessBlock = operationData.successBlock;
-                previousFailBlock = operationData.failBlock;
-                previousDownloadBlock = operationData.downloadBlock;
-            }
-
-            __weak __typeof(self) weakSelf = self;
-            NHSuccessBlock successBlock = ^(id responseObject){
-                __strong __typeof(weakSelf) strongSelf = weakSelf;
-
-                if (previousSuccessBlock) {
-                    previousSuccessBlock(responseObject);
-                }
-                [strongSelf processResponse:responseObject];
-            };
-            NHFailBlock failBlock = ^{
-                __strong __typeof(weakSelf) strongSelf = weakSelf;
-
-                if (previousFailBlock) {
-                    previousFailBlock();
-                }
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [strongSelf showFailedImage];
-                });
-            };
-            NHDownloadBlock downloadBlock = ^(float value){
-                __strong __typeof(weakSelf) strongSelf = weakSelf;
-
-                if (previousDownloadBlock) {
-                    previousDownloadBlock(value);
-                }
-                strongSelf.progressIndicator.value = value;
-            };
-
-            if (!operation
-                || operation.isFinished) {
-                AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
-                manager.responseSerializer = [AFHTTPResponseSerializer serializer];
-                operation = [manager
-                             GET:self.imagePath
-                             parameters:nil
-                             success:^(AFHTTPRequestOperation *operation,
-                                       id responseObject) {
-                                 __strong __typeof(weakSelf) strongSelf = weakSelf;
-                                 [[[strongSelf class] operationStorage] removeObjectForKey:strongSelf.imagePath];
-                                 successBlock(responseObject);
-                             } failure:^(AFHTTPRequestOperation *operation,
-                                         NSError *error) {
-                                 __strong __typeof(weakSelf) strongSelf = weakSelf;
-                                 [[[strongSelf class] operationStorage] removeObjectForKey:strongSelf.imagePath];
-                                 failBlock();
-                             }];
-            }
-            else {
-                [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation,
-                                                           id responseObject) {
-                    __strong __typeof(weakSelf) strongSelf = weakSelf;
-                    [[[strongSelf class] operationStorage] removeObjectForKey:strongSelf.imagePath];
-                    successBlock(responseObject);
-                } failure:^(AFHTTPRequestOperation *operation,
-                            NSError *error) {
-                    __strong __typeof(weakSelf) strongSelf = weakSelf;
-                    [[[strongSelf class] operationStorage] removeObjectForKey:strongSelf.imagePath];
-                    failBlock();
-                }];
-            }
-
-            [operation setDownloadProgressBlock:^(NSUInteger bytesRead,
-                                                  long long totalBytesRead,
-                                                  long long totalBytesExpectedToRead) {
-                CGFloat value = 0;
-
-                if (totalBytesExpectedToRead) {
-                    value = (double)totalBytesRead / (double)totalBytesExpectedToRead;
-                }
-
-                downloadBlock(value);
-            }];
-
-            [[[self class] operationStorage]
-             setObject:[[NHImageOperationItem alloc] initWithOperation:operation
-                                                          succeessBlock:successBlock
-                                                              failBlock:failBlock
-                                                          downloadBlock:downloadBlock]
-             forKey:self.imagePath];
-        }
+             strongSelf.progressIndicator.value = value;
+         } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
+             __strong __typeof(weakSelf) strongSelf = weakSelf;
+             
+             if (error) {
+                 [strongSelf showFailedImage];
+             }
+             else {
+                 [strongSelf showImage:image];
+             }
+         }];
     }
     else {
         [self showFailedImage];
-    }
-}
-
-- (void)processResponse:(id)responseObject {
-    __weak __typeof(self) weakSelf = self;
-
-    if ([responseObject isKindOfClass:[NSData class]]) {
-
-        FLAnimatedImage *animatedImage = [FLAnimatedImage animatedImageWithGIFData:responseObject];
-
-        if (animatedImage) {
-
-            [[[self class] imageControllerCache] setObject:animatedImage forKey:self.imagePath];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                __strong __typeof(weakSelf) strongSelf = weakSelf;
-                [strongSelf showAnimatedImage:animatedImage];
-            });
-        }
-        else {
-            UIImage *image = [UIImage imageWithData:responseObject];
-
-            if (image) {
-                [[[self class] imageControllerCache] setObject:image forKey:self.imagePath];
-            }
-
-            dispatch_async(dispatch_get_main_queue(), ^{
-                __strong __typeof(weakSelf) strongSelf = weakSelf;
-                [strongSelf showImage:image];
-            });
-        }
-    }
-    else {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            __strong __typeof(weakSelf) strongSelf = weakSelf;
-            [strongSelf showFailedImage];
-        });
     }
 }
 
@@ -404,21 +219,11 @@ typedef void(^NHDownloadBlock)(float);
     self.progressIndicator.hidden = YES;
     self.contentView.contentMode = UIViewContentModeScaleAspectFit;
     self.image = image;
-    self.contentView.image = self.image;
-    [self sizeContent];
-}
-
-- (void)showAnimatedImage:(FLAnimatedImage*)image {
-    if (!image
-        || ![image isKindOfClass:[FLAnimatedImage class]]) {
-        [self showFailedImage];
-        return;
-    }
-
-    self.progressIndicator.hidden = YES;
-    self.contentView.contentMode = UIViewContentModeScaleAspectFit;
-    self.animatedImage = image;
-    self.contentView.animatedImage = image;
+    CGFloat maxDimention = MAX([UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height);
+    self.contentView.image = self.image.images
+    ? [self.image sd_animatedImageByScalingAndCroppingToSize:CGSizeMake(maxDimention, maxDimention)]
+    : self.image;
+    
     [self sizeContent];
 }
 
@@ -427,7 +232,7 @@ typedef void(^NHDownloadBlock)(float);
     self.image = nil;
     self.progressIndicator.hidden = YES;
     self.contentView.contentMode = UIViewContentModeCenter;
-    self.contentView.image = image(@"NHImageView.none");//UIImage imageNamed:@"NHImageView.none.png"];
+    self.contentView.image = image(@"NHImageView.none");
     [self sizeContent];
 }
 

@@ -31,7 +31,8 @@
                                            @"http://wallpaperscraft.ru/image/kot_morda_ochki_tolstyy_65455_300x300.jpg",
                                            @"http://www.gabriela-biechl.at/images/pias%20aura-100x100-2004-sold.jpg",
                                            @"http://photos1.blogger.com/hello/113/2202/1024/Halloween2004%20086b.0.jpg",
-                                           [NSURL URLWithString:@"http://fc01.deviantart.net/fs70/i/2012/244/e/a/20_icons_juniel_100x100__2_by_elfy08-d5d76bt.png"]
+                                           [NSURL URLWithString:@"http://fc01.deviantart.net/fs70/i/2012/244/e/a/20_icons_juniel_100x100__2_by_elfy08-d5d76bt.png"],
+                                           [NSURL URLWithString:@"http://www.thisiscolossal.com/wp-content/uploads/2015/03/florian-8.gif"]
                                            ]
                                  andNote:nil] setStartingPage:3];
     });
@@ -49,12 +50,16 @@
     return UIInterfaceOrientationMaskLandscape;
 }
 
+- (UIInterfaceOrientation)preferredInterfaceOrientationForPresentation {
+    return UIInterfaceOrientationLandscapeLeft;
+}
+
 - (BOOL)prefersStatusBarHidden {
     return NO;
 }
 
 - (BOOL)shouldAutorotate {
-    return YES;
+    return NO;
 }
 
 @end
