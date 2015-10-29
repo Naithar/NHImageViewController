@@ -52,5 +52,8 @@ extern NSString *const kNHImageViewTextFontAttributeName;
 + (instancetype)presentIn:(UIViewController*)controller withData:(NSArray*)dataArray;
 + (instancetype)presentIn:(UIViewController*)controller withData:(NSArray*)dataArray andNote:(NSString*)note;
 
++ (void)presentImageViewController:(NHImageViewController *)imageViewController
+                          inWindow:(UIWindow *)window
+                     forController:(UIViewController *)controller;
 
 @end
